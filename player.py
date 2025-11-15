@@ -21,28 +21,23 @@ class Player(Entity):
         body.position = Vec2d(*pos)
 
         self.shape = shape = pm.Circle(body, r)
-#        shape.friction = 1.5
         shape.collision_type = COLLTYPE_DEFAULT
 
-        self.last_hit = time.time()
 
-        self.gun_body = pm.Body(body_type = pm.Body.KINEMATIC)
-        self.gun = pm.Poly(self.gun_body, [
-            (-r/2, r),
-            (-r/2, r+r),
-            (r/2, r+r),
-            (r/2, r),
-            ])
-#        self.app.space.add(self.gun)
-        self.gun.sensor=True
-        self.gun.collision_type = COLLTYPE_DEFAULT
+
+
+
 
         self.angle = 0
-        self.hit_angle = 0
+
+        self.guns = []
+
+        self.guns.append(FaceGun(self.app, r))
 
     def add_to_space(self, space):
         space.add(self.body, self.shape)
-        space.add(self.gun_body, self.gun)
+        for gun in self.guns:
+            gun.add_to_space(space)
 
     def draw(self):
         v = self.body.position + self.shape.offset.cpvrotate(self.body.rotation_vector)
@@ -53,9 +48,61 @@ class Player(Entity):
         end = self.body.position + Vec2d(self.r*math.cos(self.angle), self.r*math.sin(self.angle))
         pygame.draw.line(self.app.screen, (0,255,0), p, self.app.flipyv(end), 1)
 
+        for gun in self.guns:
+            gun.draw()
+
+
+    def update(self):
+        self.friction = 0
+
+        speed = abs(self.body.velocity)
+        if speed > 0:
+            new_angle = math.atan2(self.body.velocity.y, self.body.velocity.x)
+            self.angle = new_angle
+
+        self.friction -=10
+
+        for gun in self.guns:
+            gun.update()
+
+        controller = self.app.controller
+        dx, dy = controller.get_left_stick()
+
+        if controller.get_right_trigger():
+            base_force = 6000
+        else:
+            base_force = 1500
+
+        v = Vec2d(dx, -dy)*base_force*self.m
+        self.body.apply_force_at_local_point(v)
+        self.body.apply_force_at_local_point(self.friction*self.body.velocity*self.m)
+
+
+
+class FaceGun:
+    def __init__(self, app, r):
+        self.app = app
+        self.last_hit = time.time()
+
+        self.body = pm.Body(body_type = pm.Body.KINEMATIC)
+        self.shape = pm.Poly(self.body, [
+            (-r/2, r),
+            (-r/2, r+r),
+            (r/2, r+r),
+            (r/2, r),
+            ])
+        self.shape.sensor=True
+        self.shape.collision_type = COLLTYPE_DEFAULT
+
+        self.hit_angle = 0
+
+    def add_to_space(self, space):
+        space.add(self.body, self.shape)
+
+    def draw(self):
         if self.fire :
-            body = self.gun_body
-            poly = self.gun
+            body = self.body
+            poly = self.shape
             ps = [p.rotated(body.angle) + body.position for p in poly.get_vertices()]
             ps.append(ps[0])
             ps = list(map(self.app.flipyv, ps))
@@ -63,54 +110,35 @@ class Player(Entity):
             pygame.draw.lines(self.app.screen, color, False, ps)
             pygame.draw.polygon(self.app.screen, color, ps)
 
-
     def update(self):
         controller = self.app.controller
-        dx, dy = controller.get_left_stick()
+        player = self.app.player
 
-        if controller.get_right_trigger():
-            base_force = 6000*self.m
-        else:
-            base_force = 1500*self.m
+        now = time.time()
 
-        v = Vec2d(dx, -dy)*base_force
-        self.body.apply_force_at_local_point(v)
-        friction = self.body.velocity*-10*self.m
-        self.body.apply_force_at_local_point(friction)
-
-        speed = abs(self.body.velocity)
-        if speed > 0:
-#            alpha = 0.9
-#            if self.fire:
-#                alpha= 0.99
-            new_angle = math.atan2(self.body.velocity.y, self.body.velocity.x)
-#            self.angle = (1-alpha)*new_angle + alpha*self.angle
-            self.angle = new_angle
-
-        if time.time()-self.last_hit > 2 and not controller.get_right_trigger():
-            self.last_hit = time.time()
-#            self.hit_angle = math.atan2(self.body.velocity.y, self.body.velocity.x)
-            self.hit_angle = self.angle
+        dt = now-self.last_hit
+        if now-self.last_hit > 2 and not controller.get_right_trigger():
+            self.last_hit = now
+            dt = 0
+            self.hit_angle = player.angle
 
         self.fire = False
-        dt = time.time()-self.last_hit
+        self.body.position = player.body.position
         if dt < 1:
             t = math.sin(dt*math.pi)
-            friction = self.body.velocity*-25*self.m
-            self.body.apply_force_at_local_point(friction)
 
+            player.friction -= 25
 
             self.fire = True
-            self.gun_body.position = self.body.position
-            self.gun_body.angle = self.hit_angle-t*3.14
+            self.body.angle = self.hit_angle-t*3.14
 
             for ball in self.app.tracker[Ball]:
                 try:
-                    hit = self.gun.shapes_collide(ball.shape)
+                    hit = self.shape.shapes_collide(ball.shape)
                     self.app.remove_entity(ball)
                 except: pass
         else:
-            self.gun_body.position = self.body.position
-            self.gun_body.angle = self.angle
+            self.body.angle = player.angle
+
 
 
