@@ -11,28 +11,126 @@ from pymunk import Vec2d
 from objects import Controller, Entity, COLLTYPE_DEFAULT
 from entities import Ball, Wall
 
-class Player(Entity):
-    def __init__(self, app, pos, m, r):
+class Leg:
+    def __init__(self, app, parent_body, pos, l, offset, m, r):
         self.app = app
         self.m = m
         self.r = r
-        self.moment = pm.moment_for_circle(m, 0, r)
-        self.body = body = pm.Body(m, self.moment)
+
+        l*=r
+        x,y = offset
+        x*=r
+        y*=r
+
+        self.x = x
+        self.y = y
+        self.l = l
+        self.parent_body = parent_body
+
+#        self.foot_body = foot_body = pymunk.Body(self.m, float("inf"))
+        self.foot_body = foot_body = pymunk.Body(body_type=pymunk.Body.KINEMATIC)
+        foot_body.position = pos+Vec2d(x, l)
+        self.foot_shape = foot_shape = pymunk.Poly.create_box(foot_body, (4*r,2*r))
+        self.app.space.add(foot_body, foot_shape)
+
+        self.knee_body = knee_body = pymunk.Body(1, math.inf)
+        knee_body.position = pos+Vec2d(x,l/2)
+        self.app.space.add(knee_body)
+
+        self.c = pymunk.PinJoint(self.parent_body, self.knee_body, (x,0))
+        self.app.space.add(self.c)
+        self.c = pymunk.PinJoint(self.foot_body, self.knee_body)
+        self.app.space.add(self.c)
+        c = pymunk.DampedSpring(self.parent_body, self.foot_body, (x,0), (0,0), l, m*10000,100)
+        self.app.space.add(c)
+
+        self.active = False
+        self.active_position = Vec2d(*self.foot_body.position)
+        self.offset = Vec2d(x,y)
+
+    def update(self):
+        if self.active:
+            dt = time.time()-self.active_time
+            t = dt*4
+
+            if t >= 1:
+                self.active = False
+                t = 1
+
+            self.foot_body.position = self.active_position+self.active_direction*t
+
+
+    def activate(self, dx, dy):
+        self.active = True
+        self.active_position = self.foot_body.position
+        self.active_direction = self.l*Vec2d(dx,dy)
+        self.active_time = time.time()
+
+    def deactivate(self, other):
+        self.active = True
+        self.active_position = self.foot_body.position
+        self.active_direction = Vec2d(self.x*2,0)+(other.foot_body.position-self.foot_body.position)
+        self.active_time = time.time()
+
+
+
+class Player(Entity):
+    def __init__(self, app, pos, m, r):
+        r = 7
+        self.app = app
+        self.m = m
+        self.r = r
+        self.body = body = pm.Body(self.m, float("inf"))
         body.position = Vec2d(*pos)
 
-        self.shape = shape = pm.Circle(body, r)
-        shape.collision_type = COLLTYPE_DEFAULT
+        self.w =w= 10
+        self.h =h= 30
+
+        self.shape = pm.Poly(self.body, [
+            (-w*r/2, -h*r+w*r),
+            (-w*r/2, -h*r),
+            (w*r/2, -h*r),
+            (w*r/2, -h*r+w*r),
+            ])
+
+#        self.shape = shape = pm.Poly.create_box(body, (10*r,20*r))
+#        self.shape.mass = m
+        self.shape.collision_type = COLLTYPE_DEFAULT
+
+        self.feets = []
+
+        leg = 20
+
+        self.left_leg = Leg(self.app, self.body, pos, leg, (-w/2,0), m, r)
+        self.right_leg = Leg(self.app, self.body, pos, leg, (w/2,0), m, r)
+
+        self.center_body = pymunk.Body(body_type=pymunk.Body.KINEMATIC)
+        self.set_center_position()
+        self.app.space.add(self.center_body)
+
+        c = pymunk.DampedSpring(self.center_body, self.body, (0,0), (0,0), 0, m*100,10000)
+        self.app.space.add(c)
 
 
 
-
-
+        self.legs = [self.left_leg, self.right_leg]
+        self.active_leg_idx = 0
+        self.active_leg = self.legs[self.active_leg_idx]
+        self.active_leg.activate(0,0)
+        self.walking = False
 
         self.angle = 0
 
         self.guns = []
 
-        self.guns.append(FaceGun(self.app, r))
+#        self.guns.append(FaceGun(self.app, r))
+
+    def set_center_position(self):
+        left = self.left_leg.foot_body.position
+        right = self.right_leg.foot_body.position
+
+        t = self.r*5
+        self.center_body.position = Vec2d((left.x+right.x)/2, min(self.body.position.y, left.y-t, right.y-t))
 
     def add_to_space(self, space):
         space.add(self.body, self.shape)
@@ -40,13 +138,18 @@ class Player(Entity):
             gun.add_to_space(space)
 
     def draw(self):
-        v = self.body.position + self.shape.offset.cpvrotate(self.body.rotation_vector)
-        p = self.app.flipyv(v)
 
-        pygame.draw.circle(self.app.screen, pygame.Color("green"), p, int(self.r), 2)
 
-        end = self.body.position + Vec2d(self.r*math.cos(self.angle), self.r*math.sin(self.angle))
-        pygame.draw.line(self.app.screen, (0,255,0), p, self.app.flipyv(end), 1)
+        for body, poly in [(self.body, self.shape)]:
+            v = body.position #+ self.shape.offset.cpvrotate(self.body.rotation_vector)
+            p = self.app.flipyv(v)
+
+            ps = [p.rotated(body.angle) + body.position for p in poly.get_vertices()]
+            ps.append(ps[0])
+            ps = list(map(self.app.flipyv, ps))
+            color = (128,128,128)
+            pygame.draw.lines(self.app.screen, color, False, ps)
+            pygame.draw.polygon(self.app.screen, color, ps)
 
         for gun in self.guns:
             gun.draw()
@@ -73,10 +176,35 @@ class Player(Entity):
         else:
             base_force = 1500
 
-        v = Vec2d(dx, -dy)*base_force*self.m
-        self.body.apply_force_at_local_point(v)
+        v = Vec2d(dx, dy)*base_force*self.m
+#        self.left_leg.foot_body.apply_force_at_local_point(v)
+
+
+
+        stick_active = (dx*dx+dy*dy) > 0.5
+        if stick_active:
+            self.active_leg.foot_body.position += Vec2d(dx,dy)*10
+            if not self.active_leg.active:
+                self.active_leg.activate(dx,dy)
+                self.walking = True
+
+        self.active_leg.update()
+
+        if self.walking and not self.active_leg.active and not stick_active:
+            self.walking = False
+            if self.active_leg == self.left_leg:
+                self.right_leg.deactivate(self.left_leg)
+                self.active_leg = self.right_leg
+            elif self.active_leg == self.right_leg:
+                self.left_leg.deactivate(self.right_leg)
+                self.active_leg = self.left_leg
+
+
+        self.set_center_position()
+
         self.body.apply_force_at_local_point(self.friction*self.body.velocity*self.m)
 
+#        self.mouse_body.position += Vec2d(dx,dy)
 
 
 class FaceGun:

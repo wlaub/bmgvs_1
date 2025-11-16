@@ -9,6 +9,7 @@ import pygame
 
 import pymunk as pm
 import pymunk.util
+from pymunk import pygame_util
 from pymunk import Vec2d
 
 from objects import Controller, Entity, COLLTYPE_DEFAULT
@@ -44,6 +45,8 @@ class PhysicsDemo:
         self.screen = pygame.display.set_mode((self.w, self.h))
         self.clock = pygame.time.Clock()
 
+        self.draw_options = pygame_util.DrawOptions(self.screen)
+
         self.controller = Controller()
 
         ### Init pymunk and create space
@@ -61,11 +64,10 @@ class PhysicsDemo:
         for i in range(1):
             self.spawn()
 
-
-#        self.add_entity(Wall(self, (0, 0), (self.w, 0)))
-#        self.add_entity(Wall(self, (self.w, 0), (self.w, self.h)))
-#        self.add_entity(Wall(self, (0, self.h), (self.w, self.h)))
-#        self.add_entity(Wall(self, (0, self.h), (0, 0)))
+        self.add_entity(Wall(self, (0, 0), (self.w, 0)))
+        self.add_entity(Wall(self, (self.w, 0), (self.w, self.h)))
+        self.add_entity(Wall(self, (0, self.h), (self.w, self.h)))
+        self.add_entity(Wall(self, (0, self.h), (0, 0)))
 
         self.running = True
 
@@ -94,8 +96,10 @@ class PhysicsDemo:
     def draw(self):
         self.screen.fill((255,255,255))
 
-        for entity in self.entities:
-            entity.draw()
+#        for entity in self.entities:
+#            entity.draw()
+
+        self.space.debug_draw(self.draw_options)
 
         pygame.display.flip()
 
