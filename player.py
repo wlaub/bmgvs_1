@@ -37,12 +37,17 @@ class Leg:
         knee_body.position = pos+Vec2d(x,l/2)
         self.app.space.add(knee_body)
 
-        self.c = pymunk.PinJoint(self.parent_body, self.knee_body, (x,0))
+        self.c = pymunk.SlideJoint(self.parent_body, self.knee_body, (x,0), (0,0), l/2,l/2+1)
+#        self.c = pymunk.SlideJoint(self.parent_body, self.foot_body, (x,0), (0,0), 0,l*2+1)
         self.app.space.add(self.c)
-        self.c = pymunk.PinJoint(self.foot_body, self.knee_body)
+        self.c = pymunk.SlideJoint(self.foot_body, self.knee_body, (0,0), (0,0), l/2,l/2+1)
         self.app.space.add(self.c)
-        c = pymunk.DampedSpring(self.parent_body, self.foot_body, (x,0), (0,0), l, m*10000,100)
-        self.app.space.add(c)
+#        c = pymunk.DampedSpring(self.parent_body, self.foot_body, (x,0), (0,0), l, m*10000,100)
+        c = pymunk.DampedSpring(self.parent_body, self.foot_body,
+                                (0,-l), (0,0),
+                                (l*l*4+x*x)**0.5,
+                                m*10000,10000)
+#        self.app.space.add(c)
 
         self.active = False
         self.active_position = Vec2d(*self.foot_body.position)
@@ -63,34 +68,34 @@ class Leg:
     def activate(self, dx, dy):
         self.active = True
         self.active_position = self.foot_body.position
-        self.active_direction = self.l*Vec2d(dx,dy)
+        self.active_direction = self.l*1.5*Vec2d(dx,dy)
         self.active_time = time.time()
 
     def deactivate(self, other):
         self.active = True
         self.active_position = self.foot_body.position
-        self.active_direction = Vec2d(self.x*2,0)+(other.foot_body.position-self.foot_body.position)
+        self.active_direction = Vec2d(self.x*2.5,0)+(other.foot_body.position-self.foot_body.position)
         self.active_time = time.time()
 
 
 
 class Player(Entity):
     def __init__(self, app, pos, m, r):
-        r = 7
+        r = 5
         self.app = app
         self.m = m
         self.r = r
         self.body = body = pm.Body(self.m, float("inf"))
         body.position = Vec2d(*pos)
 
-        self.w =w= 10
-        self.h =h= 30
+        self.w =w= 10*r
+        self.h =h= 30*r
 
         self.shape = pm.Poly(self.body, [
-            (-w*r/2, -h*r+w*r),
-            (-w*r/2, -h*r),
-            (w*r/2, -h*r),
-            (w*r/2, -h*r+w*r),
+            (-w/2, -h+w),
+            (-w/2, -h),
+            (w/2, -h),
+            (w/2, -h+w),
             ])
 
 #        self.shape = shape = pm.Poly.create_box(body, (10*r,20*r))
@@ -99,16 +104,16 @@ class Player(Entity):
 
         self.feets = []
 
-        leg = 20
+        self.leg = leg = 20*r
 
-        self.left_leg = Leg(self.app, self.body, pos, leg, (-w/2,0), m, r)
-        self.right_leg = Leg(self.app, self.body, pos, leg, (w/2,0), m, r)
+        self.left_leg = Leg(self.app, self.body, pos, leg, (-w/2,0), m, 1)
+        self.right_leg = Leg(self.app, self.body, pos, leg, (w/2,0), m, 1)
 
         self.center_body = pymunk.Body(body_type=pymunk.Body.KINEMATIC)
         self.set_center_position()
         self.app.space.add(self.center_body)
 
-        c = pymunk.DampedSpring(self.center_body, self.body, (0,0), (0,0), 0, m*100,10000)
+        c = pymunk.DampedSpring(self.center_body, self.body, (0,0), (0,0), 0, m*1000,1000000)
         self.app.space.add(c)
 
 
@@ -129,8 +134,15 @@ class Player(Entity):
         left = self.left_leg.foot_body.position
         right = self.right_leg.foot_body.position
 
-        t = self.r*5
-        self.center_body.position = Vec2d((left.x+right.x)/2, min(self.body.position.y, left.y-t, right.y-t))
+        dist = max(0,abs(left-right)-self.w)
+        alpha = 1-min(1,dist/(self.leg*2))
+
+        t = 5
+        self.center_body.position = Vec2d(
+#                ((left.x+right.x)/2+self.body.position.x)/2,
+#                min(self.body.position.y-self.h/2, left.y-t, right.y-t)
+                (left.x+right.x)/2, (left.y+right.y)/2-self.leg*alpha
+                )
 
     def add_to_space(self, space):
         space.add(self.body, self.shape)
