@@ -53,10 +53,12 @@ class Leg:
         self.active_position = Vec2d(*self.foot_body.position)
         self.offset = Vec2d(x,y)
 
+        self.speed = 4
+
     def update(self):
         if self.active:
             dt = self.app.engine_time-self.active_time
-            t = dt*4
+            t = dt*self.speed
 
 #            print(t, self.app.player.left_leg == self)
             if t >= 1:
@@ -90,7 +92,16 @@ class Leg:
         self.active_time = self.app.engine_time
 
     def deactivate(self, other):
-        self.activate_target(Vec2d(self.x*2.5,0)+other.foot_body.position)
+        self.speed = 7
+        dx = 2*(random.random()-0.5)
+        rest = self.x*2.5
+
+
+
+        dy = self.parent_body.position.y - self.app.player.center_body.position.y
+        if dy > 0:
+            rest = self.x*2.5*(1+dy/20)
+        self.activate_target(Vec2d(rest+dx,0)+other.foot_body.position)
 
     def activate_target(self, pos):
         if self.active:
@@ -344,9 +355,13 @@ class Player(Entity):
                     """
                     x1,y1 = pos
                     x0,y0 = other_pos
-                    R = self.leg*4
+
                     if not fast_walk:
-                        R = self.leg*2
+                        R = self.leg*1
+                        self.active_leg.speed = 7
+                    else:
+                        R = self.leg*7
+                        self.active_leg.speed = 3
 
                     c1 = dr2*x0
                     c2 = abs(dx*R*dr)
@@ -363,11 +378,11 @@ class Player(Entity):
                     p0 = Vec2d(cx1, cy1)
                     p1 = Vec2d(cx2, cy2)
 
+
                     if (p0-pos).dot(aim) > (p1-pos).dot(aim):
                         self.active_leg.activate_target(p0)
                     else:
                         self.active_leg.activate_target(p1)
-
 
                 else:
                     sgn = -1 if dy < 0 else 1
@@ -444,10 +459,10 @@ class Sord(Entity):
                 dmg = 1
                 dv = player.body.velocity.x - ball.body.velocity.x
 #                print(dv)
-                if dv > 30:
+                if dv > 31:
                     dmg = 2
 
-                if dv > 0:
+                if dv > -5:
                     ball.get_hit(dmg)
 #                    self.app.remove_entity(ball)
             except AssertionError: pass
