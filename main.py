@@ -51,6 +51,8 @@ class PhysicsDemo:
 
         self.screen = pygame.Surface((self.w, self.h))
 
+        self.font = pygame.font.Font(None, 14)
+
         self.engine_time = 0
 
         self.draw_options = pygame_util.DrawOptions(self.screen)
@@ -75,6 +77,8 @@ class PhysicsDemo:
         for i in range(1):
             self.spawn()
 
+        self.lore_score = 0
+
 #        self.add_entity(Wall(self, (0, 0), (self.w, 0)))
 #        self.add_entity(Wall(self, (self.w, 0), (self.w, self.h)))
 #        self.add_entity(Wall(self, (0, self.h), (self.w, self.h)))
@@ -98,10 +102,7 @@ class PhysicsDemo:
             y = self.h+margin
             x = (t-0.75)*4*(self.w+2*margin)-margin
 
-        r = 4+4*random.random()
-        m = r*r/1.8
-
-        self.add_entity(Ball(self, (x,y), m, r) )
+        self.add_entity(Ball(self, (x,y)) )
         self.last_spawn = self.engine_time
 
     def draw(self):
@@ -111,6 +112,9 @@ class PhysicsDemo:
 
         for entity in self.entities:
             entity.draw()
+
+        header = self.font.render(f'{self.lore_score}', False, (0,0,128))
+        self.screen.blit(header, (2,2))
 
         hello = pygame.transform.scale(self.screen, (self.ws, self.hs))
 

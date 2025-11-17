@@ -10,6 +10,7 @@ from pymunk import Vec2d
 
 from objects import Controller, Entity, COLLTYPE_DEFAULT
 from entities import Ball, Wall
+from pickups import HealthPickup
 
 class Leg:
     def __init__(self, app, parent_body, pos, l, offset, m, r):
@@ -100,7 +101,7 @@ class Leg:
 
         dy = self.parent_body.position.y - self.app.player.center_body.position.y
         if dy > 0:
-            rest = self.x*2.5*(1+dy/20)
+            rest = self.x*2.5*(1+dy/15)
         self.activate_target(Vec2d(rest+dx,0)+other.foot_body.position)
 
     def activate_target(self, pos):
@@ -298,6 +299,15 @@ class Player(Entity):
                 hit = self.shape.shapes_collide(ball.shape)
                 self.get_hit(1)
             except: AssertionError
+
+        for entity in self.app.tracker[HealthPickup]:
+            try:
+                hit = self.shape.shapes_collide(entity.shape)
+                if self.health < 3:
+                    self.health += 1
+                self.app.remove_entity(entity)
+            except: AssertionError
+
 
 
         controller = self.app.controller

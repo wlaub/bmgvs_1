@@ -9,13 +9,16 @@ import pymunk.util
 from pymunk import Vec2d
 
 from objects import Controller, Entity, COLLTYPE_DEFAULT
+from pickups import HealthPickup, LoreOrePickup
 
 class Ball(Entity):
-    def __init__(self, app, pos, m, r):
+    def __init__(self, app, pos):
         super().__init__()
         self.app = app
-        self.m = m
-        self.r = r
+        self.r =r= 4+4*random.random()
+        self.m = m = r*r/1.8
+
+
         self.moment = pm.moment_for_circle(m, 0, r)
         self.body = body = pm.Body(m, self.moment)
         body.position = Vec2d(*pos)
@@ -49,7 +52,12 @@ class Ball(Entity):
         self.body.apply_force_at_local_point(friction)
 
     def get_hit(self, dmg):
-        self._basic_hit_spell(dmg)
+        dead = self._basic_hit_spell(dmg)
+        if dead:
+            if random.random() > 1-(self.r-4)/16:
+                self.app.add_entity(HealthPickup(self.app, self.body.position))
+            elif random.random() > 1-self.r/8:
+                self.app.add_entity(LoreOrePickup(self.app, self.body.position))
 
 class Wall(Entity):
     def __init__(self, app, start, end):

@@ -67,5 +67,6 @@ class Entity:
             self.last_hit = self.app.engine_time
             if self.health <= 0:
                 self.app.remove_entity(self)
-
+                return True
+        return False
 
