@@ -30,9 +30,7 @@ class Ball(Entity):
         self.health = r/4
 
     def draw(self):
-        v = self.body.position + self.shape.offset.cpvrotate(self.body.rotation_vector)
-#        p = self.app.flipyv(v)
-        p = v
+        p = self.body.position + self.shape.offset.cpvrotate(self.body.rotation_vector)
 
         color = (0,0,255)
         if self.app.engine_time-self.last_hit < 0.08:
@@ -45,7 +43,6 @@ class Ball(Entity):
 
         delta = player.body.position-self.body.position
         delta /=abs(delta)
-#        self.body.velocity = delta*70
         self.body.apply_force_at_local_point(delta*150*self.m)
 
         friction = self.body.velocity*-10*self.m
@@ -54,7 +51,7 @@ class Ball(Entity):
     def get_hit(self, dmg):
         dead = self._basic_hit_spell(dmg)
         if dead:
-            if random.random() > 1-(self.r-4)/16:
+            if random.random() > 1-(self.r-5)/16:
                 self.app.add_entity(HealthPickup(self.app, self.body.position))
             elif random.random() > 1-self.r/8:
                 self.app.add_entity(LoreOrePickup(self.app, self.body.position))
