@@ -10,6 +10,8 @@ import pygame
 
 import pymunk as pm
 import pymunk.util
+from enum import Enum
+
 from pymunk import Vec2d
 
 from objects import Controller, Entity, COLLTYPE_DEFAULT
@@ -17,8 +19,26 @@ from entities import Ball, Wall
 from pickups import HealthPickup
 from guns import Sord
 
+class StepState(Enum):
+    idle = 0
+    shuffle = 420
+    big_step = 67
+    small_step = 720
+
 class Leg(Entity):
     debug_draw = False
+
+    step_speeds = {
+        StepState.idle: 12,
+        StepState.shuffle: 12,
+        StepState.big_step: 4,
+        StepState.small_step:7,
+    }
+
+    step_sizes = {
+        StepState.big_step: 7,
+        StepState.small_step: 1,
+    }
 
     def __init__(self, app, parent, pos, l, offset, m):
         super().__init__(app, parent)
@@ -39,26 +59,11 @@ class Leg(Entity):
 
         self.anchor = Vec2d(x,0)
 
-        self.active = False
-        self.active_position = Vec2d(*self.foot_body.position)
-        self.offset = Vec2d(x,y)
-
+        self.step_state = StepState.idle
         self.speed = 4
 
-    def update(self):
-        if self.active:
-            dt = self.app.engine_time-self.active_time
-            t = dt*self.speed
-
-            if t >= 1:
-                self.active = False
-                t = 1
-
-            self.foot_body.position = self.active_position+self.active_direction*t
-
-            if self.debug_draw:
-                pygame.draw.circle(self.app.screen, (0,128,0), self.active_position, 2)
-                pygame.draw.circle(self.app.screen, (128,0,128), self.active_position+self.active_direction, 2)
+        self.step_start_position = Vec2d(*self.foot_body.position)
+        self.offset = Vec2d(x,y)
 
 
     def draw(self):
@@ -75,32 +80,49 @@ class Leg(Entity):
                 else:
                     pygame.draw.circle(self.app.screen, (128,0,0), p1, 2)
 
-    def activate(self, dx, dy):
-        self.active = True
-        self.active_position = self.foot_body.position
-        self.active_direction = self.l*1.5*Vec2d(dx,dy)
-        self.active_time = self.app.engine_time
+    def update(self):
+        if self.step_state != StepState.idle:
+            dt = self.app.engine_time-self.step_start_time
+            t = dt*self.speed
 
-    def deactivate(self, other):
-        #TODO turn all this nonsense into a proper state machine
+            if t >= 1:
+                self.change_step_state(StepState.idle)
+                t = 1
+
+            self.foot_body.position = self.step_start_position+self.step_direction*t
+
+            if self.debug_draw:
+                pygame.draw.circle(self.app.screen, (0,128,0), self.step_start_position, 2)
+                pygame.draw.circle(self.app.screen, (128,0,128), self.step_start_position+self.step_direction, 2)
+
+    def change_step_state(self, state):
+        if state is None: return
+        self.speed = self.step_speeds[state]
+        self.step_state = state
+
+    def get_shuffle_pos(self, pos):
         dx = 2*(random.random()-0.5)
         rest = self.x*2.5
-
-
-
         dy = self.parent_body.position.y - self.app.player.center_body.position.y
         if dy > 0:
             rest = self.x*2.5*(1+dy/15)
-        self.activate_target(Vec2d(rest+dx,0)+other.foot_body.position)
+        pos = Vec2d(rest+dx,0)+pos
+        return pos
 
-    def activate_target(self, pos):
-        if self.active:
+    def do_step(self, pos, state = None):
+        """
+        for shuffle state, pos should be other foot_body.position
+        """
+        if self.step_state != StepState.idle:
             print('no')
             return
-        self.active = True
-        self.active_position = self.foot_body.position
-        self.active_direction = (pos-self.foot_body.position)
-        self.active_time = self.app.engine_time
+        self.change_step_state(state)
+        if self.step_state == StepState.shuffle:
+            pos = self.get_shuffle_pos(pos)
+
+        self.step_start_position = self.foot_body.position
+        self.step_direction = (pos-self.foot_body.position)
+        self.step_start_time = self.app.engine_time
 
 
 
@@ -147,7 +169,7 @@ class Player(Entity):
         self.legs = [self.left_leg, self.right_leg]
         self.active_leg_idx = 0
         self.active_leg = self.legs[self.active_leg_idx]
-        self.active_leg.activate(0,0)
+#        self.active_leg.activate(0,0)
         self.walking = False
 
         #body control
@@ -281,14 +303,7 @@ class Player(Entity):
         #TODO move this leg control stuff into the proper leg controller
         if stick_active:
             #start the next stick-driven step
-            if not self.active_leg.active:
-                #toggle the active leg TODO: remove this? it does nothing?
-                if self.walking:
-                    if self.active_leg == self.left_leg:
-                        self.active_leg = self.right_leg
-                    else:
-                        self.active_leg = self.left_leg
-
+            if self.active_leg.step_state == StepState.idle:
                 #select the new active leg
                 left = self.left_leg.foot_body.position
                 right = self.right_leg.foot_body.position
@@ -313,11 +328,10 @@ class Player(Entity):
                 x0,y0 = other_pos
 
                 if not fast_walk:
-                    R = self.leg*1
-                    self.active_leg.speed = 7*self.walk_speed
+                    step_type = StepState.small_step
                 else:
-                    R = self.leg*7
-                    self.active_leg.speed = 3*self.walk_speed
+                    step_type = StepState.big_step
+                R = self.active_leg.l*Leg.step_sizes[step_type]
 
                 c1 = dr2*x0
                 c2 = abs(dx*R*dr)
@@ -339,9 +353,9 @@ class Player(Entity):
                 #TODO there has got to be a better way to pick the branch
                 #pick the one that goes the furthest in the aim direction?
                 if (p0-pos).dot(aim) > (p1-pos).dot(aim):
-                    self.active_leg.activate_target(p0)
+                    self.active_leg.do_step(p0, step_type)
                 else:
-                    self.active_leg.activate_target(p1)
+                    self.active_leg.do_step(p1, step_type)
 
 
                 self.walking = True
@@ -350,18 +364,16 @@ class Player(Entity):
         self.active_leg.update()
 
         #stop walking after last step
-        if self.walking and not self.active_leg.active and not stick_active:
+        if self.walking and self.active_leg.step_state == StepState.idle and not stick_active:
             self.walking = False
 
         #deactivate and shufle in place
-        if not self.walking and not stick_active and not self.active_leg.active:
+        if not self.walking and not stick_active and self.active_leg.step_state == StepState.idle:
             if self.active_leg == self.left_leg:
-                self.right_leg.speed=12*self.walk_speed
-                self.right_leg.deactivate(self.left_leg)
+                self.right_leg.do_step(self.left_leg.foot_body.position, StepState.shuffle)
                 self.active_leg = self.right_leg
             elif self.active_leg == self.right_leg:
-                self.left_leg.speed=12*self.walk_speed
-                self.left_leg.deactivate(self.right_leg)
+                self.left_leg.do_step(self.right_leg.foot_body.position, StepState.shuffle)
                 self.active_leg = self.left_leg
 
         #finally update the center based on where the feets are
