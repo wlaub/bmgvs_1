@@ -315,6 +315,7 @@ class Player(Entity):
         filename=now.strftime('%Y%m%d_%H%M%S.json')
         stats = {
             'now': now.isoformat(),
+            'then': self.app.startup_time.isoformat(),
             'title': self.app.title,
             'seed': self.app.seed,
             'health': self.health,

@@ -2,6 +2,7 @@ import sys, os
 import math
 import random
 import time
+import datetime
 
 from collections import defaultdict
 
@@ -68,6 +69,7 @@ class PhysicsDemo:
         self.main_screen = pygame.display.set_mode((self.ws, self.hs))
         pygame.display.set_caption(f"BLDNG MAN: GAIDN VSD0")
         self.clock = pygame.time.Clock()
+        self.startup_time = datetime.datetime.now()
 
         pygame.mouse.set_visible(False)
 
