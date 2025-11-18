@@ -18,7 +18,7 @@ from player import Player
 
 os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
 
-SEED = random.randrange(0,4207852)
+SEED = random.randrange(1000000,4207852)
 random.seed(SEED)
 
 print(SEED)
