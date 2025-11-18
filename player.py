@@ -191,6 +191,7 @@ class Player(Entity):
             'beans': self.app.beans,
            }
         print(f'{stats["lore_score"]} {stats["title"]} {stats["seed"]}')
+        print(json.dumps(stats, indent=2))
         with open(os.path.join('stats/', filename) ,'w') as fp:
             json.dump(stats, fp)
 
@@ -250,13 +251,6 @@ class Player(Entity):
         #guns
         for gun in self.guns:
             gun.update()
-
-        #damage TODO move this elsewhere?
-        for ball in self.app.tracker['Ball']:
-            try:
-                hit = self.shape.shapes_collide(ball.shape)
-                self.get_hit(1)
-            except AssertionError: pass
 
         #controls
         speed = abs(self.body.velocity)

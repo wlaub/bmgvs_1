@@ -42,6 +42,11 @@ class Ball(Entity):
         player = self.app.player
         if player is None: return
 
+        try:
+            hit = self.shape.shapes_collide(player.shape)
+            player.get_hit(1)
+        except AssertionError: pass
+
         delta = player.body.position-self.body.position
         delta /=abs(delta)
         self.body.apply_force_at_local_point(delta*150*self.m)
@@ -76,6 +81,11 @@ class ForgetfulBall(Ball):
 
         if player is None:
             return
+
+        try:
+            hit = self.shape.shapes_collide(player.shape)
+            player.get_hit(1)
+        except AssertionError: pass
 
         dt = self.app.engine_time-self.last_aggro
 
