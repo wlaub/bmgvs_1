@@ -68,6 +68,8 @@ class PhysicsDemo:
         pygame.display.set_caption(f"BLDNG MAN: GAIDN VSD0")
         self.clock = pygame.time.Clock()
 
+        pygame.mouse.set_visible(False)
+
         self.screen = pygame.Surface((self.w, self.h))
 
         self.font = pygame.font.Font(None, 14)
