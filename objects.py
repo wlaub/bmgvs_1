@@ -1,4 +1,9 @@
+import random
+import math
+
 import pygame
+
+from pygame.locals import *
 
 COLLTYPE_DEFAULT = 0
 
@@ -26,16 +31,28 @@ class Controller:
     'rt': 5,
     }
 
-    def __init__(self):
-
+    def __init__(self, app):
+        self.app = app
         self.joystick = pygame.joystick.Joystick(0)
 
     def get_left_stick(self):
+        keys = self.app.keys
+        lrud = [keys[x] for x in (K_LEFT, K_RIGHT, K_UP, K_DOWN)]
+        if any(lrud):
+            L,R,U,D = lrud
+            xpos = 1 if R else -1 if L else 0
+            ypos = 1 if D else -1 if U else 0
+            xpos += random.random()*0.05-0.025
+            ypos += random.random()*0.05-0.025
+            return (xpos, ypos)
+
         xpos = self.joystick.get_axis(self.axis_map['lx'])
         ypos = self.joystick.get_axis(self.axis_map['ly'])
         return (xpos, ypos)
 
     def get_right_trigger(self):
+        if self.app.keys[K_SPACE]:
+            return True
         return self.joystick.get_axis(self.axis_map['rt']) > 0.5
 
     def get_button(self, name):

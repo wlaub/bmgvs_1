@@ -74,7 +74,7 @@ class PhysicsDemo:
 
         self.draw_options = pygame_util.DrawOptions(self.screen)
 
-        self.controller = Controller()
+        self.controller = Controller(self)
 
         ### Init pymunk and create space
         self.run_physics = True
@@ -177,6 +177,7 @@ class PhysicsDemo:
 
     def loop(self):
         tick = False
+        self.keys = pygame.key.get_pressed()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
