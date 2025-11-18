@@ -34,6 +34,7 @@ class HealthPickup(Entity):
 
     def update(self):
         player = self.app.player
+        if player is None: return
         try:
             hit = self.shape.shapes_collide(player.shape)
 
@@ -66,6 +67,7 @@ class LengthPickup(Entity):
 
     def update(self):
         player = self.app.player
+        if player is None: return
         try:
             hit = self.shape.shapes_collide(player.shape)
 
@@ -100,6 +102,7 @@ class LoreOrePickup(Entity):
 
     def update(self):
         player = self.app.player
+        if player is None: return
         try:
             hit = self.shape.shapes_collide(player.shape)
             self.app.lore_score += 1

@@ -171,6 +171,7 @@ class Player(Entity):
     def on_remove(self):
         for gun in self.guns:
             self.app.remove_entity(gun)
+        self.app.player = None
 
     def draw(self):
         body = self.body

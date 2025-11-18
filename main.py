@@ -63,6 +63,7 @@ class PhysicsDemo:
         self.hs = self.h*self.scale
 
         self.main_screen = pygame.display.set_mode((self.ws, self.hs))
+        pygame.display.set_caption(f"BLDNG MAN: GAIDN VSP0")
         self.clock = pygame.time.Clock()
 
         self.screen = pygame.Surface((self.w, self.h))
@@ -195,7 +196,7 @@ class PhysicsDemo:
             self.draw()
 
         self.clock.tick(60)
-        pygame.display.set_caption(f"fps: {len(self.entities)}, {self.clock.get_fps():.2f}")
+#        pygame.display.set_caption(f"fps: {len(self.entities)}, {self.clock.get_fps():.2f}")
 
 demo = PhysicsDemo()
 demo.run()

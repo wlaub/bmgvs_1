@@ -40,6 +40,7 @@ class Ball(Entity):
 
     def update(self):
         player = self.app.player
+        if player is None: return
 
         delta = player.body.position-self.body.position
         delta /=abs(delta)
@@ -67,6 +68,9 @@ class ForgetfulBall(Ball):
 
     def update(self):
         player = self.app.player
+
+        if player is None:
+            return
 
         dt = self.app.engine_time-self.last_aggro
 
