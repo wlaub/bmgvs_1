@@ -34,6 +34,7 @@ class PhysicsDemo:
                 self.loop()
             except Exception as e:
                 print(e)
+                raise
 
 
     def add_entity(self, e):

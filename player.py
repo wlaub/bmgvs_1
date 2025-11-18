@@ -40,10 +40,9 @@ class Leg(Entity):
         StepState.small_step: 1,
     }
 
-    def __init__(self, app, parent, pos, l, offset, m):
+    def __init__(self, app, parent, pos, l, offset):
         super().__init__(app, parent)
         parent_body = parent.body
-        self.m = m
 
         x,y = offset
 
@@ -125,6 +124,98 @@ class Leg(Entity):
         self.step_start_time = self.app.engine_time
 
 
+class Exoskeleton(Entity):
+    def __init__(self, app, parent, pos, hips, leg_length = 3):
+        super().__init__(app, parent)
+
+        self.left_leg = self.parent.left_leg
+        self.right_leg = self.parent.right_leg
+
+        self.walking = False
+
+        self.app.add_entity(self)
+
+    def add_to_space(self, space):
+        pass
+    def remove_from_space(self, space):
+        pass
+
+    def update(self):
+        fast_walk = self.parent.fast_walk
+        stick_active = self.parent.stick_active
+        aim = self.parent.aim
+        dx, dy = aim
+
+        if stick_active and self.parent.active_leg.step_state == StepState.idle:
+            #start the next stick-driven step
+            #select the new active leg
+            left = self.left_leg.foot_body.position
+            right = self.right_leg.foot_body.position
+
+            if left.dot(aim) < right.dot(aim):
+                self.parent.active_leg = self.left_leg
+                other_leg = self.right_leg
+            else:
+                self.parent.active_leg = self.right_leg
+                other_leg = self.left_leg
+
+            """
+            select the position on a radius around the other foot that
+            maximizes the motion of their center of mass in the direction
+            of the stick
+            """
+            pos = self.parent.active_leg.foot_body.position
+            other_pos = other_leg.foot_body.position
+            dr = abs(aim)
+            dr2 = dr*dr
+            x1,y1 = pos
+            x0,y0 = other_pos
+
+            if not fast_walk:
+                step_type = StepState.small_step
+            else:
+                step_type = StepState.big_step
+            R = self.parent.active_leg.l*Leg.step_sizes[step_type]
+
+            c1 = dr2*x0
+            c2 = abs(dx*R*dr)
+
+
+            sgn = -1 if dy < 0 else 1
+
+            cx1 = (c1-c2)/dr2
+            cx2 = (c1+c2)/dr2
+            cy1 = y0 + sgn*math.sqrt(R*R+2*x0*cx1 -x0*x0 - cx1*cx1)
+            cy2 = y0 + sgn*math.sqrt(R*R+2*x0*cx2 -x0*x0 - cx2*cx2)
+
+            if self.parent.debug_draw:
+                pygame.draw.circle(self.app.screen, (255,0,0), other_pos, R, 1)
+
+            p0 = Vec2d(cx1, cy1)
+            p1 = Vec2d(cx2, cy2)
+
+            #TODO there has got to be a better way to pick the branch
+            #pick the one that goes the furthest in the aim direction?
+            if (p0-pos).dot(aim) > (p1-pos).dot(aim):
+                self.parent.active_leg.do_step(p0, step_type)
+            else:
+                self.parent.active_leg.do_step(p1, step_type)
+
+
+            self.walking = True
+
+    def post_update(self):
+
+        fast_walk = self.parent.fast_walk
+        stick_active = self.parent.stick_active
+        aim = self.parent.aim
+        dx, dy = aim
+
+        #stop walking after last step
+        if self.walking and self.parent.active_leg.step_state == StepState.idle and not stick_active:
+            self.walking = False
+
+
 
 
 class Player(Entity):
@@ -137,6 +228,10 @@ class Player(Entity):
         self.m = m = 10000
         self.body = body = pm.Body(self.m, float("inf"))
         body.position = Vec2d(*pos)
+
+        self.fast_walk = False
+        self.stick_active = False
+        self.aim = Vec2d(0,0)
 
         self.w =w= 10
         self.h =h= 17
@@ -161,16 +256,19 @@ class Player(Entity):
             ])
         self.shape.collision_type = COLLTYPE_DEFAULT
 
-        self.feets = []
-
-        self.left_leg = Leg(self.app, self, pos, leg, (-self.hips,0), m)
-        self.right_leg = Leg(self.app, self, pos, leg, (self.hips,0), m)
+        #layugs
+        self.left_leg = Leg(self.app, self, pos, self.leg, (-self.hips,0))
+        self.right_leg = Leg(self.app, self, pos, self.leg, (self.hips,0))
 
         self.legs = [self.left_leg, self.right_leg]
         self.active_leg_idx = 0
         self.active_leg = self.legs[self.active_leg_idx]
-#        self.active_leg.activate(0,0)
-        self.walking = False
+
+
+        #feets
+        self.feets = []
+        feets = Exoskeleton(self.app, self, pos, self.hips)
+        self.feets.append(feets)
 
         #body control
         self.center_body = pymunk.Body(body_type=pymunk.Body.KINEMATIC)
@@ -207,6 +305,8 @@ class Player(Entity):
     def on_remove(self):
         for gun in self.guns:
             self.app.remove_entity(gun)
+        for feet in self.feets:
+            self.app.remove_entity(feet)
         self.app.player = None
         self.write_session_stats()
 
@@ -293,82 +393,28 @@ class Player(Entity):
 
         #controls
         speed = abs(self.body.velocity)
+
         controller = self.app.controller
 
-        fast_walk = controller.get_right_trigger()
+        self.fast_walk = fast_walk = controller.get_right_trigger()
         dx, dy = controller.get_left_stick()
-        stick_active = (dx*dx+dy*dy) > 0.5
-        aim = Vec2d(dx,dy)
+        self.stick_active = stick_active = (dx*dx+dy*dy) > 0.5
+        self.aim = aim = Vec2d(dx,dy)
 
-        #TODO move this leg control stuff into the proper leg controller
-        if stick_active:
-            #start the next stick-driven step
-            if self.active_leg.step_state == StepState.idle:
-                #select the new active leg
-                left = self.left_leg.foot_body.position
-                right = self.right_leg.foot_body.position
-
-                if left.dot(aim) < right.dot(aim):
-                    self.active_leg = self.left_leg
-                    other_leg = self.right_leg
-                else:
-                    self.active_leg = self.right_leg
-                    other_leg = self.left_leg
-
-                """
-                select the position on a radius around the other foot that
-                maximizes the motion of their center of mass in the direction
-                of the stick
-                """
-                pos = self.active_leg.foot_body.position
-                other_pos = other_leg.foot_body.position
-                dr = abs(aim)
-                dr2 = dr*dr
-                x1,y1 = pos
-                x0,y0 = other_pos
-
-                if not fast_walk:
-                    step_type = StepState.small_step
-                else:
-                    step_type = StepState.big_step
-                R = self.active_leg.l*Leg.step_sizes[step_type]
-
-                c1 = dr2*x0
-                c2 = abs(dx*R*dr)
-
-
-                sgn = -1 if dy < 0 else 1
-
-                cx1 = (c1-c2)/dr2
-                cx2 = (c1+c2)/dr2
-                cy1 = y0 + sgn*math.sqrt(R*R+2*x0*cx1 -x0*x0 - cx1*cx1)
-                cy2 = y0 + sgn*math.sqrt(R*R+2*x0*cx2 -x0*x0 - cx2*cx2)
-
-                if self.debug_draw:
-                    pygame.draw.circle(self.app.screen, (255,0,0), other_pos, R, 1)
-
-                p0 = Vec2d(cx1, cy1)
-                p1 = Vec2d(cx2, cy2)
-
-                #TODO there has got to be a better way to pick the branch
-                #pick the one that goes the furthest in the aim direction?
-                if (p0-pos).dot(aim) > (p1-pos).dot(aim):
-                    self.active_leg.do_step(p0, step_type)
-                else:
-                    self.active_leg.do_step(p1, step_type)
-
-
-                self.walking = True
+        for feet in self.feets:
+            feet.update()
 
         #update legs
         self.active_leg.update()
 
-        #stop walking after last step
-        if self.walking and self.active_leg.step_state == StepState.idle and not stick_active:
-            self.walking = False
+        idle = True
+        for feet in self.feets:
+            feet.post_update()
+            if feet.walking:
+                idle = False
 
-        #deactivate and shufle in place
-        if not self.walking and not stick_active and self.active_leg.step_state == StepState.idle:
+        #if no feets active, shuffle in place
+        if idle and not stick_active and self.active_leg.step_state == StepState.idle:
             if self.active_leg == self.left_leg:
                 self.right_leg.do_step(self.left_leg.foot_body.position, StepState.shuffle)
                 self.active_leg = self.right_leg
