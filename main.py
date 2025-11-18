@@ -55,6 +55,8 @@ class PhysicsDemo:
 
 
     def __init__(self):
+        self.seed = SEED
+        self.title = TITLE
 
         pygame.init()
         self.scale = 4

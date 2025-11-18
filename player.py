@@ -1,6 +1,10 @@
+import sys, os
+
 import math
 import random
+import datetime
 import time
+import json
 
 import pygame
 
@@ -172,6 +176,22 @@ class Player(Entity):
         for gun in self.guns:
             self.app.remove_entity(gun)
         self.app.player = None
+        self.write_session_stats()
+
+    def write_session_stats(self):
+        now = datetime.datetime.now()
+        filename=now.strftime('%Y%m%d_%H%M%S.json')
+        stats = {
+            'now': now.isoformat(),
+            'title': self.app.title,
+            'seed': self.app.seed,
+            'health': self.health,
+            'time_of_death': self.app.engine_time,
+            'lore_score': self.app.lore_score,
+           }
+        with open(os.path.join('stats/', filename) ,'w') as fp:
+            json.dump(stats, fp)
+
 
     def draw(self):
         body = self.body
