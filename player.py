@@ -188,6 +188,7 @@ class Player(Entity):
             'health': self.health,
             'time_of_death': self.app.engine_time,
             'lore_score': self.app.lore_score,
+            'beans': self.app.beans,
            }
         print(f'{stats["lore_score"]} {stats["title"]} {stats["seed"]}')
         with open(os.path.join('stats/', filename) ,'w') as fp:

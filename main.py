@@ -99,6 +99,8 @@ class PhysicsDemo:
             self.spawn()
 
         self.lore_score = 0
+        self.beans = 0
+        self.field_richness = 0.75
 
 #        self.add_entity(Wall(self, (0, 0), (self.w, 0)))
 #        self.add_entity(Wall(self, (self.w, 0), (self.w, self.h)))
