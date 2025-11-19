@@ -28,22 +28,44 @@ class Zippy(BallEnemy):
         self.going = False
         self.cooldown = self.app.engine_time
         self.can_stop = False
+        self.beans = 0
 
     def update(self):
         player = self.app.player
         if player is None: return
         self.hit_player(player)
 
+        beans = self.app.tracker['BeanPickup']
+
         if not self.going and (self.app.engine_time-self.cooldown > 0 or self.app.camera.contains(self.body.position, 1)):
 #            print('going')
             self.going = True
             self.can_stop = False
-            delta = player.body.position-self.body.position
+
+
+            target = player
+            if len(beans) > 0:
+                #TODO this might want to filter for on-screen beans
+#                print('bean')
+                target = beans[0]
+
+
+            delta = target.body.position-self.body.position
             delta /= abs(delta)
             self.direction = delta*self.speed
             self.friction = -10*self.m
 
         if self.going:
+            for bean in beans:
+                try:
+                    hit = self.shape.shapes_collide(bean.shape)
+#                    print('bwned')
+                    self.beans+= 1
+                    self.app.remove_entity(bean)
+                except AssertionError: pass
+
+
+
             self.body.apply_force_at_local_point(self.direction)
 
             if not self.can_stop and self.app.camera.contains(self.body.position, 0):

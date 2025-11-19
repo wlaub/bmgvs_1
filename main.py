@@ -142,7 +142,7 @@ class PhysicsDemo:
             x = (t-0.75)*4*(l-r)+r
 
         pos = Vec2d(x,y)
-        if random.random() < 0.01 and len(self.tracker['Zippy']) == 0:
+        if random.random() < 10.01 and len(self.tracker['Zippy']) == 0:
             new_entity = Zippy(self, pos)
         elif random.random() < 0.15:
             new_entity = ForgetfulBall(self, pos)
