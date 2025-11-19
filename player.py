@@ -174,19 +174,11 @@ class Player(Entity):
         for leg in self.legs:
             leg.draw()
 
-
-        for gun in self.guns:
-            gun.draw()
-
     def get_hit(self, dmg):
         self._basic_hit_spell(dmg)
 
     def update(self):
         self.friction =-10
-
-        #guns
-        for gun in self.guns:
-            gun.update()
 
         #boosts
         dt = self.bean_hot_counter - self.app.engine_time
