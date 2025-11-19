@@ -59,7 +59,7 @@ class Sord(Entity):
             except AssertionError: pass
 
     def draw(self):
-        p = self.parent.body.position
+        p = self.app.jj(self.parent.body.position)
         pygame.draw.line(self.app.screen, (128,128,128),
                 p+self.parent.front_hand_position,
                 p+self.offset

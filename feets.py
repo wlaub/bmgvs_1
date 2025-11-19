@@ -64,8 +64,8 @@ class Leg(Entity):
 
     def draw(self):
 
-        p0 = self.parent_body.position+self.anchor
-        p1 = self.foot_body.position
+        p0 = self.app.jj(self.parent_body.position+self.anchor)
+        p1 = self.app.jj(self.foot_body.position)
 
         pygame.draw.line(self.app.screen, (0,0,0), p0, p1)
 
@@ -168,10 +168,11 @@ class Exoskeleton(Entity):
             x1,y1 = pos
             x0,y0 = other_pos
 
-            if not fast_walk:
+            if not fast_walk or self.app.camera.parent == self.app.player:
                 step_type = StepState.small_step
             else:
                 step_type = StepState.big_step
+
             R = self.parent.active_leg.l*Leg.step_sizes[step_type]
 
             c1 = dr2*x0
@@ -186,7 +187,7 @@ class Exoskeleton(Entity):
             cy2 = y0 + sgn*math.sqrt(R*R+2*x0*cx2 -x0*x0 - cx2*cx2)
 
             if self.parent.debug_draw:
-                pygame.draw.circle(self.app.screen, (255,0,0), other_pos, R, 1)
+                pygame.draw.circle(self.app.screen, (255,0,0), self.app.jj(other_pos), R, 1)
 
             p0 = Vec2d(cx1, cy1)
             p1 = Vec2d(cx2, cy2)

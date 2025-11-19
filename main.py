@@ -13,7 +13,7 @@ import pymunk.util
 from pymunk import pygame_util
 from pymunk import Vec2d
 
-from objects import Controller, Entity, COLLTYPE_DEFAULT
+from objects import Controller, Entity, COLLTYPE_DEFAULT, Camera
 from entities import Ball, Wall, ForgetfulBall
 from player import Player
 
@@ -28,6 +28,10 @@ if len(sys.argv) > 1:
     print(TITLE)
 
 class PhysicsDemo:
+
+    def jj(self, pos):
+        return pos - self.camera.position
+        return pos
 
     def run(self):
         while self.running:
@@ -55,6 +59,11 @@ class PhysicsDemo:
             self.tracker[name].remove(e)
         e.on_remove()
 
+    def connect_camera(self, entity):
+        self.camera.parent = entity
+
+    def disconnect_camera(self):
+        self.camera.parent = None
 
     def __init__(self):
         self.seed = SEED
@@ -81,6 +90,8 @@ class PhysicsDemo:
 
         self.draw_options = pygame_util.DrawOptions(self.screen)
 
+        self.camera = Camera(self, None, (-self.w/2,-self.h/2))
+
         self.controller = Controller(self)
 
         ### Init pymunk and create space
@@ -92,10 +103,11 @@ class PhysicsDemo:
         self.entities = []
         self.tracker = defaultdict(list)
 
-        self.player = Player(self, (self.w/2, self.h/2))
+        self.player = Player(self, (0,0))
+
+#        self.connect_camera(self.player)
 
         self.add_entity(self.player)
-
 
         self.last_spawn = self.engine_time
         for i in range(1):
@@ -115,18 +127,19 @@ class PhysicsDemo:
     def spawn(self):
         t = random.random()
         margin = 50
+        l,r,u,d = self.camera.lrud
         if t < 0.25:
-            x = -margin
-            y = t*4*(self.h+2*margin)-margin
+            x = l-margin
+            y = t*4*(d-u)+u
         elif t < 0.5:
-            x = self.w+margin
-            y = (t-0.25)*4*(self.h+2*margin)-margin
+            x = r+margin
+            y = (t-0.25)*4*(u-d)+d
         elif t < 0.75:
-            y = -margin
-            x = (t-0.5)*4*(self.w+2*margin)-margin
+            y = u-margin
+            x = (t-0.5)*4*(r-l)+l
         else:
-            y = self.h+margin
-            x = (t-0.75)*4*(self.w+2*margin)-margin
+            y = d+margin
+            x = (t-0.75)*4*(l-r)+r
 
         pos = Vec2d(x,y)
         if random.random() < 0.1:
@@ -175,6 +188,7 @@ class PhysicsDemo:
         self.engine_time += dt*N
 
     def do_updates(self):
+        self.camera.update()
 
         dt = self.engine_time-self.last_spawn
         if dt > 0.2 + 0.02*len(self.tracker['Ball']):

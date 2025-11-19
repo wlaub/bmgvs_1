@@ -11,6 +11,15 @@ from pymunk import Vec2d
 from objects import Controller, Entity, COLLTYPE_DEFAULT
 from pickups import HealthPickup, LoreOrePickup, LengthPickup, BeanPickup, CoffeePotPickup
 
+"""
+what if like a forgetful ball that stops on top of a bean
+with the bean centered turned into an EyeBall that drops
+like the camera upgrade
+
+
+diver enemy targets player when it comes on screen and goes until offscreen
+"""
+
 class Ball(Entity):
     def __init__(self, app, pos):
         super().__init__(app)
@@ -30,6 +39,7 @@ class Ball(Entity):
 
     def draw(self):
         p = self.body.position + self.shape.offset.cpvrotate(self.body.rotation_vector)
+        p = self.app.jj(p)
 
         color = (0,0,255)
         if self.app.engine_time-self.last_hit < 0.08:
@@ -127,6 +137,8 @@ class Wall(Entity):
 #        pv2 = self.app.flipyv(self.body.position + self.shape.b.cpvrotate(self.body.rotation_vector))
         pv1 = self.body.position + self.shape.a.cpvrotate(self.body.rotation_vector)
         pv2 = self.body.position + self.shape.b.cpvrotate(self.body.rotation_vector)
+        pv1 = self.app.jj(pv1)
+        pv2 = self.app.jj(pv2)
 
         pygame.draw.lines(self.app.screen, (0,0,0), False, [pv1, pv2])
 

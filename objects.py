@@ -62,6 +62,32 @@ class Controller:
     def get_button(self, name):
         return self.joystick.get_button(self.button_map[name])
 
+class Camera:
+    def __init__(self, app, parent, offset):
+        self.app = app
+        self.parent = parent
+        self.offset = Vec2d(*offset)
+
+        self.update_position()
+
+    def update_position(self, offset = None):
+        if offset is not None:
+            self.offset = offset
+
+        if self.parent is None:
+            self.position = Vec2d(*self.offset)
+        else:
+            self.position = self.offset + self.parent.body.position
+
+        self.left = self.position.x
+        self.right = self.position.x+self.app.w
+        self.up = self.position.y
+        self.down = self.position.y+self.app.h
+
+        self.lrud = (self.left, self.right, self.up, self.down)
+
+    def update(self):
+        self.update_position()
 
 class Entity:
     track_as = []
@@ -112,7 +138,7 @@ class Pickup(Entity):
         shape.collision_type = COLLTYPE_DEFAULT
 
     def draw(self):
-        p = self.body.position
+        p = self.app.jj(self.body.position)
         color = (0,0,255)
         pygame.draw.circle(self.app.screen, color, p, int(self.r), 2)
 

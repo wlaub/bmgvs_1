@@ -135,6 +135,7 @@ class Player(Entity):
         body = self.body
         poly = self.shape
         p = body.position #+ self.shape.offset.cpvrotate(self.body.rotation_vector)
+        p = self.app.jj(p)
 
         #head
         color = (240,192,160)
