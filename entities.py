@@ -32,7 +32,7 @@ class Zippy(BallEnemy):
         self.hit_player(player)
 
         if not self.going and (self.app.engine_time-self.cooldown > 0 or self.app.camera.contains(self.body.position, 1)):
-            print('going')
+#            print('going')
             self.going = True
             self.can_stop = False
             delta = player.body.position-self.body.position
@@ -44,11 +44,11 @@ class Zippy(BallEnemy):
             self.body.apply_force_at_local_point(self.direction)
 
             if not self.can_stop and self.app.camera.contains(self.body.position, 0):
-                print('can stop')
+#                print('can stop')
                 self.can_stop = True
 
             if self.can_stop and not self.app.camera.contains(self.body.position, 50):
-                print('stopping')
+#                print('stopping')
                 self.going = False
                 self.cooldown = self.app.engine_time+5
                 self.friction = -100*self.m
