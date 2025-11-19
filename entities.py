@@ -15,12 +15,69 @@ from pickups import HealthPickup, LoreOrePickup, LengthPickup, BeanPickup, Coffe
 what if like a forgetful ball that stops on top of a bean
 with the bean centered turned into an EyeBall that drops
 like the camera upgrade
-
-
-diver enemy targets player when it comes on screen and goes until offscreen
 """
 
+class Zippy(BallEnemy):
+    track_as = ['Enemy']
+    def __init__(self, app, pos):
+        super().__init__(app, pos, 3, 32*32/1.8, 2, 1200)
+        self.direction = Vec2d(0,0)
+        self.going = False
+        self.cooldown = self.app.engine_time
+        self.can_stop = False
+
+    def update(self):
+        player = self.app.player
+        if player is None: return
+        self.hit_player(player)
+
+        if not self.going and (self.app.engine_time-self.cooldown > 0 or self.app.camera.contains(self.body.position, 1)):
+            print('going')
+            self.going = True
+            self.can_stop = False
+            delta = player.body.position-self.body.position
+            delta /= abs(delta)
+            self.direction = delta*self.speed
+            self.friction = -10*self.m
+
+        if self.going:
+            self.body.apply_force_at_local_point(self.direction)
+
+            if not self.can_stop and self.app.camera.contains(self.body.position, 0):
+                print('can stop')
+                self.can_stop = True
+
+            if self.can_stop and not self.app.camera.contains(self.body.position, 50):
+                print('stopping')
+                self.going = False
+                self.cooldown = self.app.engine_time+5
+                self.friction = -100*self.m
+
+        self.apply_friction(player)
+
+    def get_drops(self):
+        result = []
+        if random.random() < 0.1 and  len(self.app.tracker['CoffeePotPickup']) == 0:
+           result.append(CoffeePotPickup(self.app, self.body.position))
+
+        result.append(BeanPickup(self.app, self.body.position))
+        t = random.random()
+        N = int(8*t)
+        if N > 0:
+            a = random.random()
+            for i in range(N+1):
+                aa = a+2*math.pi*i/7
+                dx,dy = random.random()-0.5, random.random()-0.5
+                r = 7+2*i%2
+                result.append(LoreOrePickup(self.app, self.body.position +
+                    Vec2d(r*math.cos(aa)+dx, r*math.sin(aa)+dy)
+                    ))
+
+        return result
+
+
 class Ball(BallEnemy):
+    track_as = ['Enemy']
     def __init__(self, app, pos):
         r= 4+4*random.random()
         m = r*r/1.8
@@ -44,7 +101,7 @@ class Ball(BallEnemy):
 
 
 class ForgetfulBall(Ball):
-    track_as = ['Ball']
+    track_as = ['Ball', 'Enemy']
     def __init__(self, app, pos):
         super().__init__(app, pos)
 #        self.last_aggro = self.app.engine_time

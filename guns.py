@@ -45,7 +45,7 @@ class Sord(Entity):
         dt = now-self.last_hit
 
         self.body.position = player.body.position+self.offset
-        for ball in self.app.tracker['Ball']:
+        for ball in self.app.tracker['Enemy']:
             try:
                 hit = self.shape.shapes_collide(ball.shape)
                 dmg = 1

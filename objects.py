@@ -89,6 +89,11 @@ class Camera:
     def update(self):
         self.update_position()
 
+    def contains(self, pos, margin=0):
+        x,y = pos
+        return x > self.left-margin and x < self.right+margin and y > self.up-margin and y < self.down+margin
+
+
 class Entity:
     track_as = []
     def __init__(self, app, parent = None):
@@ -130,7 +135,7 @@ class BallEnemy(Entity):
     def __init__(self, app, pos, r, m, health, speed=150, friction =-10):
         super().__init__(app)
         self.r = r
-        self.m = m = r*r/1.8
+        self.m = m
         self.speed = speed*m
         self.friction = friction*m
 

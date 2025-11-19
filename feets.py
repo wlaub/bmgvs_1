@@ -79,7 +79,7 @@ class Leg(Entity):
     def update(self):
         if self.step_state != StepState.idle:
             dt = self.app.engine_time-self.step_start_time
-            t = dt*self.speed
+            t = dt*self.speed*self.parent.walk_speed
 
             if t >= 1:
                 self.change_step_state(StepState.idle)
