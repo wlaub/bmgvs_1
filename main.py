@@ -181,12 +181,13 @@ class PhysicsDemo:
         self.screen.fill((255,255,255))
 
     def do_physics(self):
+        M = 1
         N = 1
         dt = 1/(120*N)
-        for _ in range(N):
+        for _ in range(N*M):
             self.space.step(dt)
 
-        self.engine_time += dt*N
+        self.engine_time += dt*N*M
 
     def do_updates(self):
         self.camera.update()
@@ -197,6 +198,11 @@ class PhysicsDemo:
 
         for entity in self.entities:
             entity.update()
+            #TODO?
+            friction = -entity.body.velocity*0.1
+            entity.body.apply_force_at_local_point(friction)
+
+
 
     def loop(self):
         tick = False
