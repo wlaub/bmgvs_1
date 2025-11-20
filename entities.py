@@ -64,8 +64,6 @@ class Zippy(BallEnemy):
                     self.app.remove_entity(bean)
                 except AssertionError: pass
 
-
-
             self.body.apply_force_at_local_point(self.direction)
 
             if not self.can_stop and self.app.camera.contains(self.body.position, 0):
@@ -87,11 +85,12 @@ class Zippy(BallEnemy):
 
         result.append(BeanPickup(self.app, self.body.position))
         t = random.random()
-        N = int(8*t)
+        M = 7 + int(self.beans/7)*7
+        N = int((M+1)*t)
         if N > 0:
             a = random.random()
             for i in range(N+1):
-                aa = a+2*math.pi*i/7
+                aa = a+2*math.pi*i/M
                 dx,dy = random.random()-0.5, random.random()-0.5
                 r = 7+2*i%2
                 result.append(LoreOrePickup(self.app, self.body.position +

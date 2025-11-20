@@ -70,10 +70,13 @@ class PhysicsDemo:
         self.title = TITLE
 
         pygame.init()
-        self.scale = 4
-        self.w, self.h = 1280/self.scale, 720/self.scale
-        self.ws = self.w*self.scale
-        self.hs = self.h*self.scale
+#        self.scale = 4
+#        self.w, self.h = 1280/self.scale, 720/self.scale
+#        self.ws = self.w*self.scale
+#        self.hs = self.h*self.scale
+
+        self.ws = 1280
+        self.hs = 720
 
         self.main_screen = pygame.display.set_mode((self.ws, self.hs))
         pygame.display.set_caption(f"BLDNG MAN: GAIDN VSD0")
@@ -82,15 +85,12 @@ class PhysicsDemo:
 
         pygame.mouse.set_visible(False)
 
-        self.screen = pygame.Surface((self.w, self.h))
-
         self.font = pygame.font.Font(None, 14)
 
         self.engine_time = 0
 
-        self.draw_options = pygame_util.DrawOptions(self.screen)
-
-        self.camera = Camera(self, None, (-self.w/2,-self.h/2))
+#        self.camera = Camera(self, None, (-self.w/2,-self.h/2))
+        self.camera = Camera(self, None, (0,0), 4)
 
         self.controller = Controller(self)
 
@@ -117,10 +117,10 @@ class PhysicsDemo:
         self.beans = 0
         self.field_richness = 0.75
 
-#        self.add_entity(Wall(self, (0, 0), (self.w, 0)))
-#        self.add_entity(Wall(self, (self.w, 0), (self.w, self.h)))
-#        self.add_entity(Wall(self, (0, self.h), (self.w, self.h)))
-#        self.add_entity(Wall(self, (0, self.h), (0, 0)))
+#        self.add_entity(Wall(self, (0, 0), (self.camera.w, 0)))
+#        self.add_entity(Wall(self, (self.camera.w, 0), (self.camera.w, self.camera.h)))
+#        self.add_entity(Wall(self, (0, self.camera.h), (self.camera.w, self.camera.h)))
+#        self.add_entity(Wall(self, (0, self.camera.h), (0, 0)))
 
         self.running = True
 
@@ -142,7 +142,7 @@ class PhysicsDemo:
             x = (t-0.75)*4*(l-r)+r
 
         pos = Vec2d(x,y)
-        if random.random() < 10.01 and len(self.tracker['Zippy']) == 0:
+        if random.random() < 0.01 and len(self.tracker['Zippy']) == 0:
             new_entity = Zippy(self, pos)
         elif random.random() < 0.15:
             new_entity = ForgetfulBall(self, pos)
@@ -164,7 +164,7 @@ class PhysicsDemo:
         self.screen.blit(header, (2,2))
 
 
-        ypos = self.h-2
+        ypos = self.camera.h-2
         text = self.font.render(f'{TITLE}', False, (128,128,0))
         ypos -= text.get_height()
         self.screen.blit(text, (2,ypos))
@@ -196,7 +196,6 @@ class PhysicsDemo:
         if dt > 0.2 + 0.02*len(self.tracker['Ball']):
             self.spawn()
 
-
         for entity in self.entities:
             entity.update()
 
@@ -212,7 +211,14 @@ class PhysicsDemo:
                 tick = True
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_q:
                 self.render_physics = not self.render_physics
-
+#            elif event.type == pygame.KEYDOWN and event.key == pygame.K_1:
+#                self.camera.set_scale(1)
+#            elif event.type == pygame.KEYDOWN and event.key == pygame.K_2:
+#                self.camera.set_scale(2)
+#            elif event.type == pygame.KEYDOWN and event.key == pygame.K_3:
+#                self.camera.set_scale(4)
+#            elif event.type == pygame.KEYDOWN and event.key == pygame.K_4:
+#                self.camera.set_scale(8)
 
         if self.run_physics or tick:
             self.do_updates()
@@ -221,7 +227,9 @@ class PhysicsDemo:
 
             self.draw()
 
+        self.camera.update_scale()
         self.clock.tick(60)
+
 #        pygame.display.set_caption(f"fps: {len(self.tracker['Ball'])}, {self.clock.get_fps():.2f}")
 
 demo = PhysicsDemo()

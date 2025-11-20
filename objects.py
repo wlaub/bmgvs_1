@@ -7,6 +7,7 @@ from pygame.locals import *
 
 import pymunk as pm
 import pymunk.util
+from pymunk import pygame_util
 from pymunk import Vec2d
 
 COLLTYPE_DEFAULT = 0
@@ -63,26 +64,47 @@ class Controller:
         return self.joystick.get_button(self.button_map[name])
 
 class Camera:
-    def __init__(self, app, parent, offset):
+    def __init__(self, app, parent, position, scale):
         self.app = app
         self.parent = parent
-        self.offset = Vec2d(*offset)
 
-        self.update_position()
+        self.reference_position = position
+        self.set_scale(scale)
+        self.update_scale()
+        self.update_position(position)
 
-    def update_position(self, offset = None):
-        if offset is not None:
-            self.offset = offset
+    def set_scale(self, scale):
+        self.pending_scale = scale
 
-        if self.parent is None:
-            self.position = Vec2d(*self.offset)
-        else:
-            self.position = self.offset + self.parent.body.position
+    def update_scale(self):
+        if self.pending_scale is not None:
+            self.scale = scale = self.pending_scale
+            self.w = self.app.ws/scale
+            self.h = self.app.hs/scale
+
+            self.half_off = Vec2d(-self.w/2, -self.h/2)
+            self.screen = pygame.Surface((self.w, self.h))
+
+            self.app.screen = self.screen
+            self.app.draw_options = pygame_util.DrawOptions(self.screen)
+
+            self.pending_scale = None
+
+            self.update_position(self.reference_position)
+
+    def update_position(self, position = None):
+        if position is None and self.parent is None:
+            return
+
+        if self.parent is not None:
+            self.position = self.parent.body.position+self.half_off
+        elif position is not None:
+            self.position = Vec2d(*position)+self.half_off
 
         self.left = self.position.x
-        self.right = self.position.x+self.app.w
+        self.right = self.position.x+self.w
         self.up = self.position.y
-        self.down = self.position.y+self.app.h
+        self.down = self.position.y+self.h
 
         self.lrud = (self.left, self.right, self.up, self.down)
 
