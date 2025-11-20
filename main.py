@@ -199,8 +199,10 @@ class PhysicsDemo:
         for entity in self.entities:
             entity.update()
             #TODO?
-            friction = -entity.body.velocity*0.1
-            entity.body.apply_force_at_local_point(friction)
+            try:
+                friction = -entity.body.velocity*0.1
+                entity.body.apply_force_at_local_point(friction)
+            except AttributeError: pass
 
 
 
