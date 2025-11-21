@@ -13,6 +13,8 @@ from objects import Controller, Entity, COLLTYPE_DEFAULT, BallEnemy
 from pickups import HealthPickup, LoreOrePickup, LengthPickup, BeanPickup, CoffeePotPickup
 
 """
+need a debug console that can spawn enemies and stuff
+
 and eye boss drops portable camera pickup
 """
 
@@ -206,7 +208,7 @@ class Ball(BallEnemy):
 
     def __str__(self):
         p = self.position
-        return f'E {p.x:6.1f} {p.y:6.1f} Ball {self.state}'
+        return f'{super().__str__()} {self.state}'
 
     def __init__(self, app, pos, r = None, m = None, h = None):
         if r is None:

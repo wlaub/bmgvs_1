@@ -100,6 +100,7 @@ class PhysicsDemo:
         self.space = pm.Space()
 #        self.space.gravity = (0.0, -900.0)
 
+        self.eidhwm = 0
         self.entities = []
         self.tracker = defaultdict(list)
 
@@ -122,6 +123,11 @@ class PhysicsDemo:
 
         self.running = True
 
+    def get_eid(self):
+        self.eidhwm+=1
+        return self.eidhwm
+
+
     def spawn(self):
         t = random.random()
         margin = 50
@@ -142,8 +148,8 @@ class PhysicsDemo:
         pos = Vec2d(x,y)
         if random.random() < 0.01 and len(self.tracker['Zippy']) == 0:
             new_entity = Zippy(self, pos)
-        if random.random() < 0.01 and len(self.tracker['Zeeker']) < 2:
-            new_entity = Zeeker(self, pos)
+#        if random.random() < 0.01 and len(self.tracker['Zeeker']) < 2:
+#            new_entity = Zeeker(self, pos)
 #
 #        elif random.random() < 0.15:
 #            new_entity = ForgetfulBall(self, pos)
@@ -215,7 +221,7 @@ class PhysicsDemo:
                 tick = True
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_q:
                 self.render_physics = not self.render_physics
-            elif False:
+            elif True:
                 if event.type == pygame.KEYDOWN and event.key == ord('`'):
                     print('okay')
                     for entity in self.entities:

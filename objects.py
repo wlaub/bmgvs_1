@@ -124,7 +124,7 @@ class Entity:
     def __str__(self):
         p = self.position
         name = self.__class__.__name__
-        return f'E {p.x:6.1f} {p.y:6.1f} {name}'
+        return f'E{self.eid:05} {p.x:6.1f} {p.y:6.1f} {name}'
 
     def __init__(self, app, parent = None):
         self.app = app
@@ -133,6 +133,7 @@ class Entity:
         self.grace_time = 0.2
         self.health = 1
         self.vocal = False
+        self.eid = self.app.get_eid()
 
     def say(self, text):
         if self.vocal:
