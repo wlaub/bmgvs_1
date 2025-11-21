@@ -13,12 +13,7 @@ from objects import Controller, Entity, COLLTYPE_DEFAULT, BallEnemy
 from pickups import HealthPickup, LoreOrePickup, LengthPickup, BeanPickup, CoffeePotPickup
 
 """
-zippy ball pursues and eats beans?
-if it gets enough it transforms into eye ball and multiple eye balls can merge into eye boss
 and eye boss drops portable camera pickup
-
-
-forgetful ball rests on lore wil eat it and ??
 """
 
 class Zippy(BallEnemy):
@@ -47,7 +42,7 @@ class Zippy(BallEnemy):
             target = player
             if len(beans) > 0:
                 #TODO this might want to filter for on-screen beans
-#                print('bean')
+                self.say('bean')
                 target = beans[0]
 
 
@@ -57,22 +52,28 @@ class Zippy(BallEnemy):
             self.friction = -10*self.m
 
         if self.going:
+
             for bean in beans:
                 try:
                     hit = self.shape.shapes_collide(bean.shape)
-#                    print('bwned')
+                    self.say('bwned')
                     self.beans+= 1
                     self.app.remove_entity(bean)
+                    if self.beans == 7:
+                        self.app.remove_entity(self)
+                        self.app.add_entity(Zeeker(self.app, self.position))
+                        return
+
                 except AssertionError: pass
 
             self.body.apply_force_at_local_point(self.direction)
 
             if not self.can_stop and self.app.camera.contains(self.body.position, 0):
-#                print('can stop')
+                self.say('can stop')
                 self.can_stop = True
 
             if self.can_stop and not self.app.camera.contains(self.body.position, 50):
-#                print('stopping')
+                self.say('stopping')
                 self.going = False
                 self.cooldown = self.app.engine_time+5
                 self.friction = -100*self.m
@@ -99,6 +100,90 @@ class Zippy(BallEnemy):
                     ))
 
         return result
+
+
+
+class Zeeker(BallEnemy):
+    track_as = ['Enemy']
+    def __init__(self, app, pos):
+        super().__init__(app, pos, 3, 32*32/1.8, 3, 1200)
+        self.direction = Vec2d(0,0)
+        self.going = False
+        self.cooldown = self.app.engine_time
+        self.can_stop = False
+        self.beans = 0
+        self.target = None
+
+        self.zeek_radius = 90
+
+    def update(self):
+        player = self.app.player
+        if player is None: return
+        self.hit_player(player)
+
+        beans = self.app.tracker['Zeeker']
+
+        if self.target is None:
+            self.target = player
+
+        if not self.going:
+            self.say('going')
+            self.going = True
+            self.can_stop = False
+
+            if len(beans) > 0:
+                #TODO this might want to filter for on-screen beans
+                self.say('hello there')
+                for bean in beans:
+                    if bean is not self:
+                        self.target = bean
+                        break
+                delta = self.target.body.position-self.body.position
+                r = abs(delta)
+
+            if r != 0:
+                delta /= r
+                self.direction = delta*self.speed
+                self.friction = -10*self.m
+            else:
+                self.going = False
+                self.direction = Vec2d(0,0)
+        else:
+            delta = self.target.body.position-self.body.position
+            r = abs(delta)
+
+
+        if self.going:
+            for bean in beans:
+                if bean is self: continue
+                try:
+                    hit = self.shape.shapes_collide(bean.shape)
+                    self.say('blessed union')
+                    #TODO merge into new enemy
+                    self.app.remove_entity(bean)
+                    self.app.remove_entity(self)
+                    return
+                except AssertionError: pass
+
+            self.body.apply_force_at_local_point(self.direction)
+
+            if not self.can_stop and r < self.zeek_radius-5:
+                self.say('can stop')
+                self.can_stop = True
+
+            if self.can_stop and r > self.zeek_radius:
+                self.say('stopping')
+                self.going = False
+                self.cooldown = self.app.engine_time+5
+                self.friction = -100*self.m
+
+        self.apply_friction(player)
+
+    def get_drops(self):
+        result = []
+        #TODO
+        return result
+
 
 
 class BallState(enum.Enum):
@@ -156,6 +241,7 @@ class Ball(BallEnemy):
             for lore in lores:
                 try:
                     hit = self.shape.shapes_collide(lore.shape)
+                    self.say("what's this?")
                     self.app.remove_entity(lore)
                     self.set_state(BallState.LSTFL)
                     break

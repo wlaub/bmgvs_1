@@ -132,6 +132,11 @@ class Entity:
         self.last_hit = -100
         self.grace_time = 0.2
         self.health = 1
+        self.vocal = False
+
+    def say(self, text):
+        if self.vocal:
+            print(text)
 
     @property
     def position(self):
