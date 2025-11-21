@@ -10,6 +10,8 @@ import pymunk.util
 from pymunk import pygame_util
 from pymunk import Vec2d
 
+from registry import register, entity_registry
+
 COLLTYPE_DEFAULT = 0
 
 class Controller:
@@ -117,9 +119,8 @@ class Camera:
         x,y = pos
         return x > self.left-margin and x < self.right+margin and y > self.up-margin and y < self.down+margin
 
-
 class Entity:
-    track_as = []
+    track_as = set()
 
     def __str__(self):
         p = self.position
@@ -134,6 +135,9 @@ class Entity:
         self.health = 1
         self.vocal = False
         self.eid = self.app.get_eid()
+
+    def __hash__(self):
+        return self.eid
 
     def say(self, text):
         if self.vocal:

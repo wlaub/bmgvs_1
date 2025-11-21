@@ -8,8 +8,11 @@ import pymunk as pm
 import pymunk.util
 from pymunk import Vec2d
 
+from registry import register, entity_registry
+
 from objects import Controller, Entity, COLLTYPE_DEFAULT, Equipment
 
+@register
 class Sord(Equipment):
     valid_slots = ['front_hand']
     def __init__(self, app, parent):

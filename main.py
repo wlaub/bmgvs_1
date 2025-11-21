@@ -13,6 +13,8 @@ import pymunk.util
 from pymunk import pygame_util
 from pymunk import Vec2d
 
+from registry import register, entity_registry
+
 from objects import Controller, Entity, COLLTYPE_DEFAULT, Camera
 from entities import Ball, Wall, Zippy, Zeeker
 from player import Player
@@ -43,20 +45,19 @@ class PhysicsDemo:
 
 
     def add_entity(self, e):
-#        self.space.add(e.body, e.shape)
         e.add_to_space(self.space)
         self.entities.append(e)
-        self.tracker[e.__class__.__name__].append(e)
-        for name in e.track_as:
-            self.tracker[name].append(e)
+        class_name = e.__class__.__name__
+        for tag in entity_registry.name_tags[class_name]:
+            self.tracker[tag].append(e)
         e.on_add()
 
     def remove_entity(self, e):
         e.remove_from_space(self.space)
         self.entities.remove(e)
-        self.tracker[e.__class__.__name__].remove(e)
-        for name in e.track_as:
-            self.tracker[name].remove(e)
+        class_name = e.__class__.__name__
+        for tag in entity_registry.name_tags[class_name]:
+            self.tracker[tag].remove(e)
         e.on_remove()
 
     def connect_camera(self, entity):
@@ -104,9 +105,7 @@ class PhysicsDemo:
         self.entities = []
         self.tracker = defaultdict(list)
 
-        self.player = Player(self, (0,0))
-
-        self.add_entity(self.player)
+        self.player = self.spawn_entity('Player', (0,0))
 
         self.last_spawn = self.engine_time
         for i in range(1):
@@ -127,6 +126,13 @@ class PhysicsDemo:
         self.eidhwm+=1
         return self.eidhwm
 
+    def create_entity(self, name, *args, **kwargs):
+        return entity_registry.create_entity(name, self, *args, **kwargs)
+
+    def spawn_entity(self, name, *args, **kwargs):
+        entity = self.create_entity(name, *args, **kwargs)
+        self.add_entity(entity)
+        return entity
 
     def spawn(self):
         t = random.random()

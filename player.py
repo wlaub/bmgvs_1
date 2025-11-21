@@ -14,12 +14,15 @@ from enum import Enum
 
 from pymunk import Vec2d
 
+from registry import register, entity_registry
+
 from objects import Controller, Entity, COLLTYPE_DEFAULT
 from entities import Ball, Wall
 from pickups import HealthPickup
 from guns import Sord
 from feets import Leg, Exoskeleton, StepState
 
+@register
 class Player(Entity):
     debug_draw = False
     def __init__(self, app, pos):

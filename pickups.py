@@ -8,9 +8,12 @@ import pymunk as pm
 import pymunk.util
 from pymunk import Vec2d
 
+from registry import register, entity_registry
+
 from objects import Controller, Entity, COLLTYPE_DEFAULT, Pickup
 from guns import Sord
 
+@register
 class HealthPickup(Pickup):
 
     def __init__(self, app, pos):
@@ -21,6 +24,7 @@ class HealthPickup(Pickup):
         player.health += 1/(1+extra)
         super().on_player(player)
 
+@register
 class LengthPickup(Pickup):
 
     def __init__(self, app, pos):
@@ -31,6 +35,7 @@ class LengthPickup(Pickup):
             sord.offset += Vec2d(1,0)
         super().on_player(player)
 
+@register
 class LoreOrePickup(Pickup):
 
     def __init__(self, app, pos):
@@ -40,6 +45,7 @@ class LoreOrePickup(Pickup):
         self.app.lore_score += 1
         super().on_player(player)
 
+@register
 class BeanPickup(Pickup):
 
     def __init__(self, app, pos):
@@ -49,6 +55,7 @@ class BeanPickup(Pickup):
         self.app.beans += 1
         super().on_player(player)
 
+@register
 class CoffeePotPickup(Pickup):
 
     def __init__(self, app, pos):

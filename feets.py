@@ -14,6 +14,8 @@ from enum import Enum
 
 from pymunk import Vec2d
 
+from registry import register, entity_registry
+
 from objects import Controller, Entity, COLLTYPE_DEFAULT, Equipment
 
 class StepState(Enum):
@@ -22,6 +24,7 @@ class StepState(Enum):
     big_step = 67
     small_step = 720
 
+@register
 class Leg(Entity):
     debug_draw = False
 
@@ -120,7 +123,7 @@ class Leg(Entity):
         self.step_direction = (pos-self.foot_body.position)
         self.step_start_time = self.app.engine_time
 
-
+@register
 class Exoskeleton(Equipment):
     valid_slots = ['legs']
     is_feets = True

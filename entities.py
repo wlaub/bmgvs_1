@@ -9,6 +9,8 @@ import pymunk as pm
 import pymunk.util
 from pymunk import Vec2d
 
+from registry import register, entity_registry
+
 from objects import Controller, Entity, COLLTYPE_DEFAULT, BallEnemy
 from pickups import HealthPickup, LoreOrePickup, LengthPickup, BeanPickup, CoffeePotPickup
 
@@ -18,8 +20,9 @@ need a debug console that can spawn enemies and stuff
 and eye boss drops portable camera pickup
 """
 
+@register
 class Zippy(BallEnemy):
-    track_as = ['Enemy']
+    track_as = {'Enemy'}
     def __init__(self, app, pos):
         super().__init__(app, pos, 3, 32*32/1.8, 3, 1200)
         self.direction = Vec2d(0,0)
@@ -104,9 +107,9 @@ class Zippy(BallEnemy):
         return result
 
 
-
+@register
 class Zeeker(BallEnemy):
-    track_as = ['Enemy']
+    track_as = {'Enemy'}
     def __init__(self, app, pos):
         super().__init__(app, pos, 3, 32*32/1.8, 3, 1200)
         self.direction = Vec2d(0,0)
@@ -199,8 +202,9 @@ class BallState(enum.Enum):
     FGTFL = 1
     LSTFL = 2
 
+@register
 class Ball(BallEnemy):
-    track_as = ['Enemy']
+    track_as = {'Enemy'}
 
     update_map = {
         BallState.NORML: BallEnemy.update,
@@ -302,7 +306,7 @@ class Ball(BallEnemy):
                 return [CoffeePotPickup(self.app, self.position)]
         return []
 
-
+@register
 class Wall(Entity):
     def __init__(self, app, start, end):
         super().__init__(app)

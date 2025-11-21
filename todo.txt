@@ -110,6 +110,6 @@ keyboard controls:
     walk toward mouse if in window
     space for fast walk
 
-
+graphics
 
 
