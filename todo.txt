@@ -60,6 +60,15 @@ registry.py
 x unfuck the cursor
 
 unfuck render layers
+unfuck body/shape management
+    Entity.add_body(*args, **kwargs):
+        self.app.space.add(*args, **kwargs)
+        self.bodies.append((args, kwargs))
+
+    Entity.remove_bodies:
+        for args, kwargs in self.bodies:
+            self.app.space.remove(*args, **kwargs)
+
 do hand hitboxes and equipment pickups
 make equipment pickups show a controls popup when active?
     or just turn red?

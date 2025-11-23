@@ -25,6 +25,8 @@ import pickups
 import guns
 import feets
 
+IS_DEBUG = bool(os.getenv('DEBUG', False))
+
 os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
 
 SEED = random.randrange(1000000,4207852)
@@ -42,7 +44,6 @@ class PhysicsDemo:
         return pos
 
     def run(self):
-        self.last_mpos_screen = pygame.mouse.get_pos()
         while self.running:
             try:
                 self.loop()
@@ -226,11 +227,10 @@ class PhysicsDemo:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-            elif False or True:
+            elif IS_DEBUG:
                 self.debug_console.handle_event(event)
 
-        if self.mpos_screen != self.last_mpos_screen: #TODO
-            self.controller.last_kind = ControlType.key
+        self.controller.update()
 
         if self.run_physics or tick:
             self.screen.fill((255,255,255))
@@ -249,8 +249,6 @@ class PhysicsDemo:
 
         if (not self.run_physics or self.controller.last_kind is ControlType.key) and pygame.mouse.get_focused():
             pygame.draw.circle(self.main_screen, (0,0,0), self.mpos_screen, 2)
-
-        self.last_mpos_screen = self.mpos_screen
 
         pygame.display.flip()
 

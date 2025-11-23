@@ -49,20 +49,29 @@ class Controller:
         self.last_kind = ControlType.joy
 
         self.last_stick = (0,0)
+        self.last_mpos = (0,0)
 
-    def get_left_stick(self):
+    def update(self):
+        if self.last_mpos != self.app.mpos_screen:
+            self.last_mpos =  self.app.mpos_screen
+            self.last_kind = ControlType.key
+
         xpos = self.joystick.get_axis(self.axis_map['lx'])
         ypos = self.joystick.get_axis(self.axis_map['ly'])
         if (xpos, ypos) != self.last_stick:
             self.last_kind = ControlType.joy
             self.last_stick = (xpos, ypos)
 
+    def get_left_stick(self):
         if self.last_kind == ControlType.joy:
             return self.last_stick
         else:
-            return Vec2d(*self.app.mpos)-self.app.player.position
-
-        return (xpos, ypos)
+            result = Vec2d(*self.app.mpos)-self.app.player.position
+            r2 = result.get_length_sqrd()
+            if r2 < 64:
+                return Vec2d(0,0)
+            else:
+                return result
 
     def get_right_trigger(self):
         if pygame.mouse.get_pressed()[0]:
