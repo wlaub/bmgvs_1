@@ -5,8 +5,6 @@ this uses python with pymunk and pygame. you're probably looking at like 60 MB d
 
 setup.sh creates a directory called "stats" for saving stats and a python3 virtualenv called venv with pymunk and pygame installed. run.sh sources the venv and runs the game with some version information from git. if any of this is not to your liking (maybe you want to manage your dependencies differently, use a specific python installation, or run outside of a repo), you really just need a stats directory, pymunk, and pygame, and you can get there however you'd like. the setup and run scripts are very shrimple, so it shouldn't be too difficult to make them do what you want (unless you just wanna do all the setup and stuff by hand).
 
-there is something like keyboard support, but you really need a controller. this is just mapped to my xbox360 controller. at time of righting it's joystick and right trigger or cursor keys and spacebar (sic). analog aiming is important, and idk how to do that w/ mouse and keyboard, but it would probably involve a hold/toggle to walk toward the mouse. i don't wanna fuck with the cursor that much. i don't even like hiding it but haven't found time to replace it with something unobtrusive
-
 setup.sh:
 ```bash
 #!/bin/bash -e
