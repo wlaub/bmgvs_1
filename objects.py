@@ -56,7 +56,6 @@ class Controller:
         if (xpos, ypos) != self.last_stick:
             self.last_kind = ControlType.joy
             self.last_stick = (xpos, ypos)
-            print('stick')
 
         if self.last_kind == ControlType.joy:
             return self.last_stick
@@ -70,6 +69,15 @@ class Controller:
             self.last_kind = ControlType.key
             return True
         if self.joystick.get_axis(self.axis_map['rt']) > 0.5:
+            self.last_kind = ControlType.joy
+            return True
+        return False
+
+    def equip(self):
+        if pygame.mouse.get_pressed()[2]:
+            self.last_kind = ControlType.key
+            return True
+        if self.joystick.get_axis(self.axis_map['lt']) > 0.5:
             self.last_kind = ControlType.joy
             return True
         return False
@@ -144,7 +152,7 @@ class Entity:
         name = self.__class__.__name__
         return f'E{self.eid:05} {p.x:6.1f} {p.y:6.1f} {name}'
 
-    def __init__(self, app, parent = None):
+    def __init__(self, app, parent = None, layer=None):
         self.app = app
         self.parent = parent
         self.last_hit = -100
@@ -152,6 +160,7 @@ class Entity:
         self.health = 1
         self.vocal = False
         self.eid = self.app.get_eid()
+        self.layer = layer
 
     def __hash__(self):
         return self.eid

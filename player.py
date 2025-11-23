@@ -88,8 +88,8 @@ class Player(Entity):
         self.equip('legs', feets)
 
         #hayunds
-        sord = self.app.create_entity('Sord', self)
-        self.equip('front_hand', sord)
+#        sord = self.app.create_entity('Sord', self)
+#        self.equip('front_hand', sord)
 
 #        b = self.app.create_entity('RckngBall', self)
 #        self.equip('back_hand', b)
@@ -161,7 +161,7 @@ class Player(Entity):
             'title': self.app.title,
             'seed': self.app.seed,
             'health': self.health,
-            'time_of_death': self.app.engine_time,
+            'time_of_death': self.app.engine_time-self.app.startup_engine_time,
             'lore_score': self.app.lore_score,
             'beans': self.app.beans,
            }

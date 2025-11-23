@@ -59,6 +59,12 @@ registry.py
 
 x unfuck the cursor
 
+unfuck render layers
+do hand hitboxes and equipment pickups
+make equipment pickups show a controls popup when active?
+    or just turn red?
+    maybe the hand moves or blinks?
+
 debug console
     list entities in a pane
     show player, camera location

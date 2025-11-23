@@ -13,6 +13,43 @@ from registry import register, entity_registry
 from objects import Controller, Entity, COLLTYPE_DEFAULT, Pickup
 
 @register
+class SordPickup(Pickup):
+
+    def __init__(self, app, pos):
+        super(Pickup, self).__init__(app)
+        self.body = body = pm.Body(body_type = pymunk.Body.STATIC)
+        body.position = Vec2d(*pos)
+
+        self.w = w = 3+2
+        self.h = h = 7+2
+        self.shape = shape = pm.Poly.create_box(body, (self.w, self.h))
+        shape.sensor = True
+        shape.collision_type = COLLTYPE_DEFAULT
+        self.player_on = False
+
+    def draw(self):
+        p = self.app.jj(self.body.position)
+        color = (0,0,255)
+
+        vertices = []
+        for v in self.shape.get_vertices():
+            p = self.app.jj(v.rotated(self.body.angle)+self.body.position+Vec2d(-2,3)) #TODO fix this
+            vertices.append(p)
+        pygame.draw.polygon(self.app.screen, color, vertices, 1)
+
+
+    def on_player(self, player):
+        #TODO make this collide with the player's hand instead of head
+        #TODO formalize player_on for pickups
+        self.player_on = True
+        if self.app.controller.equip():
+            sord = self.app.create_entity('Sord', player)
+            player.equip('front_hand', sord)
+            self.app.start_game()
+            super().on_player(player)
+
+
+@register
 class HealthPickup(Pickup):
 
     def __init__(self, app, pos):

@@ -51,9 +51,11 @@ class PhysicsDemo:
                 raise
 
 
-    def add_entity(self, e):
+    def add_entity(self, e, layer=0):
         e.add_to_space(self.space)
         self.entities.append(e)
+        e.layer=layer #TODO this is awful
+        self.draw_layers[layer].append(e)
         class_name = e.__class__.__name__
         for tag in entity_registry.name_tags[class_name]:
             self.tracker[tag].append(e)
@@ -62,6 +64,7 @@ class PhysicsDemo:
     def remove_entity(self, e):
         e.remove_from_space(self.space)
         self.entities.remove(e)
+        self.draw_layers[e.layer].remove(e)
         class_name = e.__class__.__name__
         for tag in entity_registry.name_tags[class_name]:
             self.tracker[tag].remove(e)
@@ -93,6 +96,8 @@ class PhysicsDemo:
 
         self.engine_time = 0
 
+        self.game_start = False
+
         self.debug_console = DebugConsole(self)
 
         self.camera = Camera(self, None, (0,0), 4)
@@ -107,24 +112,26 @@ class PhysicsDemo:
 
         self.eidhwm = 0
         self.entities = []
+        self.draw_layers = defaultdict(list)
         self.tracker = defaultdict(list)
 
-        self.player = self.spawn_entity('Player', (0,0))
+        self.player = self.spawn_entity('Player', (0,0), layer=10)
+
+        self.spawn_entity('SordPickup', (16,-4))
 
         self.last_spawn = self.engine_time
-        for i in range(1):
-            self.spawn()
 
         self.lore_score = 0
         self.beans = 0
-        self.field_richness = 0.75
-
-#        self.add_entity(Wall(self, (0, 0), (self.camera.w, 0)))
-#        self.add_entity(Wall(self, (self.camera.w, 0), (self.camera.w, self.camera.h)))
-#        self.add_entity(Wall(self, (0, self.camera.h), (self.camera.w, self.camera.h)))
-#        self.add_entity(Wall(self, (0, self.camera.h), (0, 0)))
+        self.field_richness = 0.75 #TODO geography
 
         self.running = True
+
+    def start_game(self):
+        if not self.game_start:
+            self.game_start = True
+            self.startup_time = datetime.datetime.now()
+            self.startup_engine_time = self.engine_time
 
     def get_eid(self):
         self.eidhwm+=1
@@ -134,8 +141,9 @@ class PhysicsDemo:
         return entity_registry.create_entity(name, self, *args, **kwargs)
 
     def spawn_entity(self, name, *args, **kwargs):
+        layer = kwargs.pop('layer', 0) #TODO this is zoness???
         entity = self.create_entity(name, *args, **kwargs)
-        self.add_entity(entity)
+        self.add_entity(entity, layer=layer)
         return entity
 
     def spawn(self):
@@ -169,8 +177,9 @@ class PhysicsDemo:
         if self.render_physics:
             self.space.debug_draw(self.draw_options)
 
-        for entity in self.entities:
-            entity.draw()
+        for layer in sorted(self.draw_layers.keys()):
+            for entity in self.draw_layers[layer]:
+                entity.draw()
 
         header = self.font.render(f'{self.lore_score}', False, (0,0,128))
         self.screen.blit(header, (2,2))
@@ -202,7 +211,7 @@ class PhysicsDemo:
         self.camera.update()
 
         dt = self.engine_time-self.last_spawn
-        if dt > 0.2 + 0.02*len(self.tracker['Ball']):
+        if self.game_start and dt > 0.2 + 0.02*len(self.tracker['Ball']):
             self.spawn()
 
         for entity in self.entities:
