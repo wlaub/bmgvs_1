@@ -91,6 +91,11 @@ class Player(Entity):
         sord = self.app.create_entity('Sord', self)
         self.equip('front_hand', sord)
 
+#        b = self.app.create_entity('RckngBall', self)
+#        self.equip('back_hand', b)
+
+
+
         #body control
         self.center_body = pymunk.Body(body_type=pymunk.Body.KINEMATIC)
         self.set_center_position()

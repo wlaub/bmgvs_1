@@ -55,21 +55,27 @@ here be spoilers
 
 
 registry.py
-    entity class registry
-    register decorators  
-    access entity classes by category etc
-    allow entity to be spawned without importing
+x    entity class registry
+x    register decorators  
+x    access entity classes by category etc
+x    allow entity to be spawned without importing
         take a kwargs and pass it to the constructor with a copy of the kwargs that the entity can store for spawning children or w/e i am like 51% sure this is a good idea that i have, in the past, yearned for.
 
+unfuck the cursor
+
 debug console
-    pause simulation
+x    pause simulation
     list entities in a pane
     show player, camera location
-    spawn entities
+x    spawn entities
     inspect entities
     make unkillable
     give bean/lore
     etc
+
+make the player pick up the sord at the start to start spawning happening
+
+better body management for add/remove to facilite arbitrary structures and merging
 
 figure out the right way to do collision
     need to be able to quickly get any pair of entities that collided
@@ -103,8 +109,6 @@ lustful ball
 rooms/transitions
 
 geography persistence mechanics
-
-unfuck the cursor
 
 keyboard controls:
     walk toward mouse if in window
