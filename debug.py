@@ -152,6 +152,10 @@ class DebugConsole:
                 name = parts[1]
                 self.app.spawn_entity(name, self.app.mpos)
                 self.entity_list = self.get_entity_list()
+            elif cmd == 'equip':
+                slot = parts[1]
+                name = parts[2]
+                self.app.player.equip(slot, name)
             elif cmd == 'hide':
                 self.hides = set()
                 if len(parts) > 1:

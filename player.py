@@ -85,18 +85,9 @@ class Player(Entity):
 
         #feets
         self.feets = []
-        feets = self.app.create_entity('Exoskeleton', self, pos, self.hips)
-
-        self.equip('legs', feets)
+        self.equip('legs', 'Exoskeleton')
 
         #hayunds
-#        sord = self.app.create_entity('Sord', self)
-#        self.equip('front_hand', sord)
-
-#        b = self.app.create_entity('RckngBall', self)
-#        self.equip('back_hand', b)
-
-
 
         #body control
         self.center_body = pymunk.Body(body_type=pymunk.Body.KINEMATIC)
@@ -110,12 +101,18 @@ class Player(Entity):
         if not slot in self.slots.keys():
             self.slots[slot] = None
 
-    def equip(self, slot, entity):
+    def equip(self, slot, name):
+        entity = self.app.create_entity(name, self)
+        return self.equip_entity(slot, entity)
+
+    def equip_entity(self, slot, entity):
         if slot in entity.valid_slots and self.slots[slot] is None:
             self.slots[slot] = entity
             self.app.add_entity(entity)
             if entity.is_feets:
                 self.feets.append(entity)
+            return True
+        return False
 
     def unequip(self, slot):
         if self.slots[slot] is not None:

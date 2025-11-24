@@ -127,8 +127,12 @@ class Leg(Entity):
 class Exoskeleton(Equipment):
     valid_slots = ['legs']
     is_feets = True
-    def __init__(self, app, parent, pos, hips, leg_length = 3):
+    def __init__(self, app, parent):
         super().__init__(app, parent)
+
+        pos = self.parent.position
+        hips = self.parent.hips
+        leg_length = self.parent.legs
 
         self.left_leg = self.parent.left_leg
         self.right_leg = self.parent.right_leg

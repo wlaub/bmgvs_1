@@ -43,10 +43,11 @@ class SordPickup(Pickup):
         #TODO formalize player_on for pickups
         self.player_on = True
         if self.app.controller.equip():
-            sord = self.app.create_entity('Sord', player)
-            player.equip('front_hand', sord)
-            self.app.start_game()
-            super().on_player(player)
+
+#            sord = self.app.create_entity('Sord', player)
+            if player.equip('front_hand', 'Sord'):
+                self.app.start_game()
+                super().on_player(player)
 
 
 @register

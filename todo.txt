@@ -81,6 +81,7 @@ split ball enemies back into different enemies
 debug console
     get entity at cursor
     inspect entities
+    tab completion
     etc
 
 figure out the right way to do collision
