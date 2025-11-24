@@ -75,7 +75,7 @@ class Sord(Equipment):
 
 @register
 class RckngBall(Equipment):
-    valid_slots = ['back_hand']
+    valid_slots = ['back_hand', 'front_hand']
     def __init__(self, app, parent):
         super().__init__(app, parent)
         self.last_hit = self.app.engine_time

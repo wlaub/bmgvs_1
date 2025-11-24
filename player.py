@@ -66,6 +66,8 @@ class Player(Entity):
         self.bean_hot_potency = 1
         self.walk_rate = 1
 
+        #TODO slot active and unactive positions
+
         #physics
         self.shape = pm.Poly(self.body, [
             (-w/2, -h+w),
@@ -105,8 +107,22 @@ class Player(Entity):
         entity = self.app.create_entity(name, self)
         return self.equip_entity(slot, entity)
 
+    def drop_equipment(self, slot):
+        old = self.slots[slot]
+        if old is not None:
+            pickup_name = f'{old.ename}Pickup'
+            if pickup_name in entity_registry.by_name.keys():
+                #TODO use the slot position here
+                self.app.spawn_entity(pickup_name, self.position)
+            self.unequip(slot)
+
     def equip_entity(self, slot, entity):
-        if slot in entity.valid_slots and self.slots[slot] is None:
+        if not slot in entity.valid_slots:
+            print(f"can't put {entity.ename} in {slot}")
+            return False
+
+        if self.slots[slot] is None or self.slots[slot].ename != entity.ename:
+            self.drop_equipment(slot)
             self.slots[slot] = entity
             self.app.add_entity(entity)
             if entity.is_feets:

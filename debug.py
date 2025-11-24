@@ -156,6 +156,11 @@ class DebugConsole:
                 slot = parts[1]
                 name = parts[2]
                 self.app.player.equip(slot, name)
+                self.entity_list = self.get_entity_list()
+            elif cmd == 'drop':
+                slot = parts[1]
+                self.app.player.drop_equipment(slot)
+                self.entity_list = self.get_entity_list()
             elif cmd == 'hide':
                 self.hides = set()
                 if len(parts) > 1:

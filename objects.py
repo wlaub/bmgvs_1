@@ -165,6 +165,10 @@ class Entity:
         name = self.__class__.__name__
         return f'E{self.eid:05} {p.x:6.1f} {p.y:6.1f} {name}'
 
+    @property
+    def ename(self):
+        return self.__class__.__name__
+
     def __init__(self, app, parent = None, layer=None):
         self.app = app
         self.parent = parent
