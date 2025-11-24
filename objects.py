@@ -108,6 +108,11 @@ class Camera:
         pos += self.half_off
         return pos
 
+    def w2s(self, pos):
+        pos -= self.half_off
+        pos *= self.scale
+        return pos
+
     def set_scale(self, scale):
         self.pending_scale = scale
 

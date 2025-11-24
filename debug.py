@@ -84,10 +84,13 @@ class DebugConsole:
         if not self.active:
             return
 
+        self.hovered_button = None
+        for button in self.entity_list:
+            if button.get_hit(self.app.mpos_screen):
+                self.hovered_button = button
+
         if event.type == pygame.MOUSEBUTTONDOWN:
-            for button in self.entity_list:
-                if button.get_hit(self.app.mpos_screen):
-                    pass
+            pass
 
         mods = pygame.key.get_mods()
 
@@ -200,7 +203,7 @@ class DebugConsole:
         xpos = m+3+text.get_width()
         pygame.gfxdraw.line(screen, xpos, ypos, xpos, ypos+19, font_color)
 
-        #entity listo
+        # entity listo
 
         dh = self.fs + 6
 
@@ -216,22 +219,28 @@ class DebugConsole:
         t = 0+m+1
         b = t+dh
         for text, button in zip(texts, self.entity_list):
+            color = bg_color
+            if button == self.hovered_button:
+                color = (128,128,128,bg_color[3])
 
-            pygame.gfxdraw.box(screen, pygame.Rect(l, t, dw, dh), bg_color)
+            button.set_size(l,r,t,b)
+
+            pygame.gfxdraw.box(screen, pygame.Rect(l, t, dw, dh), color)
 
             screen.blit(text, (l+3, t+3))
             t += dh+3
             b = t+dh
 
-            button.set_size(l,r,t,b)
+
 
         #infopane
         cpos = self.app.camera.reference_position
         health = 0
         if self.app.player is not None:
             health = self.app.player.health
+
         info_text = f"""
-{cpos.x:6.1f} {cpos.y:6.1f} {len(self.app.entities):05}
+{cpos.x:6.1f} {cpos.y:6.1f} {self.app.mpos.x:6.1f} {self.app.mpos.y:6.1f} {len(self.app.entities):05}
 {health:03} {self.app.lore_score:05} {self.app.beans:05}
 """
         texts = []
@@ -255,7 +264,15 @@ class DebugConsole:
             screen.blit(text, (l+3, t+3))
             t += self.fs
 
-
+        # entity indicator
+        if self.hovered_button is not None:
+            entity = self.hovered_button.entity
+            p = self.app.camera.w2s(entity.position)
+            r = 49
+            x = round(min(max(p.x, -r/2), self.app.ws+r/2))
+            y = round(min(max(p.y, -r/2), self.app.hs+r/2))
+            pygame.gfxdraw.filled_circle(self.app.main_screen, x, y, r, (255,0,0,64))
+            pygame.gfxdraw.filled_circle(self.app.main_screen, x, y, 1, (0,255,0))
 
 
 

@@ -57,9 +57,9 @@ here be spoilers
 registry.py
         take a kwargs and pass it to the constructor with a copy of the kwargs that the entity can store for spawning children or w/e i am like 51% sure this is a good idea that i have, in the past, yearned for.
 
-x unfuck the cursor
-
 unfuck render layers
+    or maybe just formalize using kwargs to pass stuff to entity creation?
+
 unfuck body/shape management
     Entity.add_body(*args, **kwargs):
         self.app.space.add(*args, **kwargs)
@@ -74,15 +74,14 @@ make equipment pickups show a controls popup when active?
     or just turn red?
     maybe the hand moves or blinks?
 
-debug console
-x    list entities in a pane
-x    show player, camera location
-    inspect entities
-x    make unkillable
-x    give bean/lore
-    etc
+make weapon equipment pickup hitboxes a small area where you have to place your hand to pickup, too small to overlap both hands
 
-x make the player pick up the sord at the start to start spawning happening
+split ball enemies back into different enemies
+
+debug console
+    get entity at cursor
+    inspect entities
+    etc
 
 figure out the right way to do collision
     need to be able to quickly get any pair of entities that collided
@@ -90,6 +89,8 @@ figure out the right way to do collision
 boss 1
 
 camera movement mechanics
+    pick up in hand at node
+    drop from hand at another node
 
 geographical support conditions
     parameters for controlling spawning by location
