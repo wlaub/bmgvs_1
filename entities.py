@@ -71,7 +71,7 @@ class Zippy(BallEnemy):
                     self.app.remove_entity(bean)
                     if self.beans == 7:
                         self.app.remove_entity(self)
-                        self.app.spawn_entity('Zeeker', self.position)
+                        self.app.spawn_entity('Zeeky', self.position)
                         return
 
                 except AssertionError: pass
@@ -113,7 +113,7 @@ class Zippy(BallEnemy):
 
 
 @register
-class Zeeker(BallEnemy):
+class Zeeky(BallEnemy):
     track_as = {'Enemy'}
     def __init__(self, app, pos):
         super().__init__(app, pos, 3, 32*32/1.8, 3, 1200)
@@ -133,7 +133,7 @@ class Zeeker(BallEnemy):
         if player is None: return
         self.hit_player(player)
 
-        beans = self.app.tracker['Zeeker']
+        beans = self.app.tracker['Zeeky']
 
         if self.target is None:
             self.target = player
@@ -176,8 +176,15 @@ class Zeeker(BallEnemy):
                     hit = self.shape.shapes_collide(bean.shape)
                     self.say('blessed union')
                     #TODO merge into new enemy
-                    self.app.remove_entity(bean)
-                    self.app.remove_entity(self)
+                    #this is why body management needs unfucked
+                    self.app.remove_entity(bean, preserve_physics = True)
+                    self.app.remove_entity(self, preserve_physics = True)
+                    body_map = {
+                        bean.body: (bean.shape,),
+                        self.body: (self.shape,),
+                        }
+                    #TODO someday
+#                    self.app.spawn_entity('Zbln', body_map)
                     return
                 except AssertionError: pass
 
@@ -199,6 +206,120 @@ class Zeeker(BallEnemy):
         result = []
         #TODO
         return result
+
+
+@register
+class Zbln(BallEnemy):
+    track_as = {'Enemy'}
+    def __init__(self, app, body_map):
+        super(BallEnemy,self).__init__(app)
+
+        self.health = 16
+        self.last_hit = -10
+
+        self.body_map = body_map
+
+        my_list = list(body_map.items())
+        self.joints = []
+        for a,b in zip(my_list[:-1], my_list[1:]):
+            c = pymunk.PinJoint(a[0],b[0])
+            self.joints.append(c)
+
+        self.m = 0
+        self.shapes = []
+        for body, shapes in self.body_map.items():
+            self.shapes.extend(shapes)
+            self.m += body.mass
+
+        m = self.m
+        self.speed = 100*m
+        self.friction = -1*m
+
+        self.get_position()
+        self.my_velocity = Vec2d(0,0)
+
+    def add_to_space(self, space):
+#        for body, shapes in self.body_map.items():
+#            space.add(body, *shapes)
+
+        for c in self.joints:
+            space.add(c)
+
+    def remove_from_space(self, space):
+        for body, shapes in self.body_map.items():
+            space.remove(body, *shapes)
+
+    def get_position(self):
+        total = Vec2d(0,0)
+        for body, shapes in self.body_map.items():
+            total += body.position
+        total /= len(self.body_map)
+        self.my_position = total
+
+    @property
+    def position(self):
+        return self.my_position
+
+    @property
+    def velocity(self):
+        return self.my_velocity
+
+    def hit_player(self, player, dmg=1):
+        for shape in self.shapes:
+            try:
+                hit = shape.shapes_collide(player.shape)
+                player.get_hit(dmg)
+            except AssertionError: pass
+
+    def try_hit(self, other_shape):
+        for body, shapes in self.body_map.items():
+            for shape in shapes:
+                try:
+                    hit = other_shape.shapes_collide(shape)
+                    self.my_velocity = body.velocity
+                    self.last_hit_body = body
+                    break
+                except AssertionError: pass
+            else: continue
+            break #i take it back this is the worst thing i have ever done
+        else:
+            raise AssertionError #This is the worst thing i have ever done
+
+    def seek_player(self, player):
+        delta = player.position-self.position
+        delta /= abs(delta)
+        for body in self.body_map.keys():
+            body.apply_force_at_local_point(delta*self.speed)
+
+    def apply_friction(self, player):
+        vel = Vec2d(0,0)
+        for body in self.body_map.keys():
+            vel+= body.velocity
+        vel/=len(self.body_map)
+
+        friction = vel*self.friction
+        for body in self.body_map.keys():
+#            friction = body.velocity*self.friction
+
+            body.apply_force_at_local_point(friction)
+
+
+
+    def update(self):
+        self.get_position()
+        self.normal_update()
+
+    def draw(self):
+        for body, shapes in self.body_map.items():
+            for shape in shapes:
+                p = body.position + shape.offset.cpvrotate(body.rotation_vector)
+                p = self.app.jj(p)
+
+                color = (0,0,255)
+                if self.app.engine_time-self.last_hit < 0.08:
+                    color = (255,0,0)
+
+                pygame.draw.circle(self.app.screen, color, p, round(shape.radius), 2)
 
 
 

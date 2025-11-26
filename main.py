@@ -62,8 +62,9 @@ class PhysicsDemo:
             self.tracker[tag].append(e)
         e.on_add()
 
-    def remove_entity(self, e):
-        e.remove_from_space(self.space)
+    def remove_entity(self, e, preserve_physics = False):
+        if not preserve_physics:
+            e.remove_from_space(self.space)
         self.entities.remove(e)
         self.draw_layers[e.layer].remove(e)
         class_name = e.__class__.__name__

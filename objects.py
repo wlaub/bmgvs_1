@@ -194,6 +194,10 @@ class Entity:
     def position(self):
         return self.body.position
 
+    @property
+    def velocity(self):
+        return self.body.velocity
+
     def draw(self):
         pass
     def update(self):
@@ -262,7 +266,7 @@ class BallEnemy(Entity):
         except AssertionError: pass
 
     def seek_player(self, player):
-        delta = player.body.position-self.body.position
+        delta = player.position-self.position
         delta /= abs(delta)
         self.body.apply_force_at_local_point(delta*self.speed)
 
@@ -286,6 +290,9 @@ class BallEnemy(Entity):
             for drop in self.get_drops():
                 self.app.add_entity(drop)
             self.app.remove_entity(self)
+
+    def try_hit(self, shape):
+        self.shape.shapes_collide(shape)
 
     def get_drops(self):
         return []

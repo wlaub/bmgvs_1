@@ -49,9 +49,11 @@ class Sord(Equipment):
         self.body.position = player.body.position+self.offset
         for ball in self.app.tracker['Enemy']:
             try:
-                hit = self.shape.shapes_collide(ball.shape)
+                #so what i really need is to unfuck collision detection
+                #so that i can just find all the bodies that have hit this body and their entities
+                ball.try_hit(self.shape)
                 dmg = 1
-                dv = player.body.velocity.x - ball.body.velocity.x
+                dv = player.velocity.x - ball.velocity.x
 #                print(dv)
                 if dv > 31:
                     dmg = 2
