@@ -338,3 +338,53 @@ class Pickup(Entity):
         self.app.remove_entity(self)
 
 
+
+class Flags:
+    def __init__(self):
+        self.flags = {}
+        self.volatile_flags = {}
+
+        self.on_set = []
+
+    def get(self, name, default = None):
+        return self.flags.get(name, default)
+
+    def getv(self, name, default = None):
+        return self.volatile_flags.get(name, default)
+
+
+    def set(self, name, value=True):
+        old_value = self.flags.get(name, None)
+        self.flags[name] = value
+        self.run_on_set(name, old_value, value, volatile=False)
+
+    def setv(self, name, value=True):
+        old_value = self.volatile_flags.get(name, None)
+        self.volatile_flags[name] = value
+        self.run_on_set(name, old_value, value, volatile=True)
+
+
+    def clear(self, name):
+        old_value = self.flags.pop(name, None)
+        self.run_on_set(name, old_value, None, volatile=False)
+
+        return old_value
+
+    def clearv(self, name):
+        old_value = self.volatile_flags.pop(name, None)
+        self.run_on_set(name, old_value, None, volatile=True)
+
+        return old_value
+
+
+
+    def run_on_set(self, name, old_value, new_value, volatile):
+        for cb in self.on_set:
+            try:
+                cb(name, old_value, new_value, volatile)
+            except Exception as e:
+                print(f'exception in Flags.on_set cb {cb}')
+                print(str(e))
+
+
+

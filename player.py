@@ -229,14 +229,15 @@ class Player(Entity):
     def write_session_stats(self):
         now = datetime.datetime.now()
         filename=now.strftime('%Y%m%d_%H%M%S.json')
+        startup_time =self.app.flags.getv('_startup_time')
         stats = {
             'now': now.isoformat(),
-            'then': self.app.startup_time.isoformat(),
+            'then': startup_time.isoformat(),
             'title': self.app.title,
             'seed': self.app.seed,
             'health': self.health,
-            'time_of_death': self.app.engine_time-self.app.startup_engine_time,
-            'fleshworld_duration': str((now-self.app.startup_time)),
+            'time_of_death': self.app.engine_time-self.app.flags.getv('_startup_engine_time'),
+            'fleshworld_duration': str(now-startup_time),
             'lore_score': self.app.lore_score,
             'beans': self.app.beans,
            }

@@ -15,7 +15,7 @@ from pymunk import Vec2d
 
 from registry import register, entity_registry
 
-from objects import Controller, Entity, COLLTYPE_DEFAULT, Camera, ControlType
+from objects import Controller, Entity, COLLTYPE_DEFAULT, Camera, ControlType, Flags
 
 from debug import DebugConsole
 
@@ -90,7 +90,6 @@ class PhysicsDemo:
         self.main_screen = pygame.display.set_mode((self.ws, self.hs))
         pygame.display.set_caption(f"BLDNG MAN: GAIDN VSD0")
         self.clock = pygame.time.Clock()
-        self.startup_time = datetime.datetime.now()
 
         pygame.mouse.set_visible(False)
 
@@ -99,6 +98,9 @@ class PhysicsDemo:
         self.engine_time = 0
 
         self.game_start = False
+
+        self.flags = Flags()
+        self.flags.setv('_startup_time', datetime.datetime.now())
 
         self.debug_console = DebugConsole(self)
 
@@ -130,10 +132,10 @@ class PhysicsDemo:
         self.running = True
 
     def start_game(self):
-        if not self.game_start:
-            self.game_start = True
-            self.startup_time = datetime.datetime.now()
-            self.startup_engine_time = self.engine_time
+        if not self.flags.getv('_game_start', False):
+            self.flags.setv('_game_start')
+            self.flags.setv('_startup_time', datetime.datetime.now())
+            self.flags.setv('_startup_engine_time', self.engine_time)
 
     def get_eid(self):
         self.eidhwm+=1
