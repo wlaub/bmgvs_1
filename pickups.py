@@ -21,9 +21,6 @@ class SordPickup(Pickup):
         self.body = body = pm.Body(body_type = pymunk.Body.STATIC)
         body.position = Vec2d(*pos)
 
-#        self.w = w = 3+2
-#        self.h = h = 7+2
-
         self.w = 3
         self.h = 3
 
