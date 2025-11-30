@@ -82,6 +82,10 @@ class Zippy(BallEnemy):
                 self.say('can stop')
                 self.can_stop = True
 
+            if not self.can_stop and not self.app.camera.contains(self.position, 100):
+                self.say('wtf where am i')
+                self.can_stop = True
+
             if self.can_stop and not self.app.camera.contains(self.position, 50):
                 self.say('stopping')
                 self.going = False
@@ -248,6 +252,8 @@ class Zbln(BallEnemy):
         self.base_speed = 25
         self.base_friction = -0.1
 
+
+        #TODO consider more mass
         self.m = 0
         self.shapes = []
         for body, shapes in self.body_map.items():
@@ -483,6 +489,7 @@ class Ball(BallEnemy):
             try:
                 hit = self.shape.shapes_collide(target.shape)
                 self.lores+= 1
+                self.say("don't mind if i do")
                 self.app.remove_entity(target)
                 target = player
             except AssertionError: pass

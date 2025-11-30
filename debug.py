@@ -3,6 +3,7 @@ import math
 import random
 import time
 import datetime
+import json
 
 from collections import defaultdict
 
@@ -147,6 +148,23 @@ class DebugConsole:
         self.stashed = ''
         self.cursor = 0
 
+        def parse_parts(x):
+            parts = []
+            for p in x:
+                try:
+                    parts.append(json.loads(p))
+                except: pass
+                else:
+                    continue
+                try:
+                    parts.append(json.loads(p.lower()))
+                except: pass
+                else:
+                    continue
+                parts.append(p)
+            return parts
+
+
         try:
             parts = full_cmd.split()
             cmd = parts[0]
@@ -183,15 +201,15 @@ class DebugConsole:
                 elif what == 'lore':
                     self.app.lore_score+=1
             elif cmd == 'setv':
-                self.app.flags.setv(*parts[1:])
+                self.app.flags.setv(*parse_parts(parts[1:]))
             elif cmd == 'set':
-                self.app.flags.set(*parts[1:])
+                self.app.flags.set(*parse_parts(parts[1:]))
             elif cmd == 'clearv':
-                print(self.app.flags.clearv(*parts[1:]))
+                print(self.app.flags.clearv(*parse_parts(parts[1:])))
             elif cmd == 'getv':
-                print(self.app.flags.getv(*parts[1:]))
+                print(self.app.flags.getv(*parse_parts(parts[1:])))
             elif cmd == 'get':
-                print(self.app.flags.get(*parts[1:]))
+                print(self.app.flags.get(*parse_parts(parts[1:])))
             elif cmd == 'flags':
                 print('nv:')
                 for key, value in self.app.flags.flags.items():
@@ -199,8 +217,8 @@ class DebugConsole:
                 print('v:')
                 for key, value in self.app.flags.volatile_flags.items():
                     print(f'  {key}:\t{value}')
-            elif cmd == 'pain':
-                self.app.player.can_get_hurt = not self.app.player.can_get_hurt
+            else:
+                print('?')
         except Exception as e:
             print(e)
 

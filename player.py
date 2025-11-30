@@ -266,9 +266,15 @@ class Player(Entity):
             1
             )
         #hair
-        pygame.draw.rect(self.app.screen, (128,128,128),
-            pygame.Rect(p+Vec2d(-self.w/2, -self.h), (5, self.health))
-            )
+        if self.health >= 0:
+            pygame.draw.rect(self.app.screen, (128,128,128),
+                pygame.Rect(p+Vec2d(-self.w/2, -self.h), (5, self.health))
+                )
+        else:
+            pygame.draw.rect(self.app.screen, (128,128,128),
+                pygame.Rect(p+Vec2d(-self.w/2, -self.h+self.health), (5, -self.health))
+                )
+
         #eye
         pygame.draw.rect(self.app.screen, (0,0,128),
             pygame.Rect(p+Vec2d(4, -self.h+2), (2, 2))
@@ -329,8 +335,7 @@ class Player(Entity):
 
 
     def get_hit(self, dmg):
-        if self.can_get_hurt:
-            self._basic_hit_spell(dmg)
+        self._advanced_hit_spell(dmg)
 
     def update(self):
         self.friction =-10

@@ -1,6 +1,7 @@
 import random
 import math
 import enum
+from collections import defaultdict
 
 import pygame
 
@@ -184,7 +185,7 @@ class Entity:
         self.last_hit = -100
         self.grace_time = 0.2
         self.health = 1
-        self.vocal = False
+        self.vocal = self.app.flags.getv('_vocal', False)
         self.eid = self.app.get_eid()
         self.layer = layer
         self.debug_log = []
@@ -236,6 +237,17 @@ class Entity:
                 self.app.remove_entity(self)
                 return True
         return False
+
+    def _advanced_hit_spell(self, dmg):
+        if self.app.engine_time - self.last_hit > self.grace_time:
+            self.health -= dmg
+            self.last_hit = self.app.engine_time
+            if self.health <= 0 and self.app.flags.getv('_death', True) is not False:
+                self.app.remove_entity(self)
+                return True
+        return False
+
+
 
 class Equipment(Entity):
     valid_slots = []
@@ -345,6 +357,7 @@ class Flags:
         self.volatile_flags = {}
 
         self.on_set = []
+        self.on_flag = defaultdict(list)
 
     def getnv(self, name, default = None):
         return self.flags.get(name, default)
@@ -383,8 +396,13 @@ class Flags:
             try:
                 cb(name, old_value, new_value, volatile)
             except Exception as e:
-                print(f'exception in Flags.on_set cb {cb}')
+                print(f'exception in Flags.on_set cb {cb} {name=} {old_value=} {new_value=} {volatile=}')
                 print(str(e))
-
+        for cb in self.on_flag[name]:
+            try:
+                cb(name, old_value, new_value, volatile)
+            except Exception as e:
+                print(f'exception in Flags.on_flag({name}) cb {cb} {name=} {old_value=} {new_value=}, volatile=')
+                print(str(e))
 
 

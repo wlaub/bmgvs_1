@@ -102,6 +102,15 @@ class PhysicsDemo:
         self.flags = Flags()
         self.flags.setv('_startup_time', datetime.datetime.now())
 
+        def _on_vocal(name, old_value, new_value, volatile):
+            if new_value:
+                for entity in self.entities:
+                    entity.vocal = True
+            else:
+                for entity in self.entities:
+                    entity.vocal = False
+        self.flags.on_flag['_vocal'].append(_on_vocal)
+
         self.debug_console = DebugConsole(self)
 
         self.camera = Camera(self, None, (0,0), 4)
