@@ -137,7 +137,9 @@ class Zeeky(BallEnemy):
         if len(beans) == 0:
             beans = self.app.tracker['Zeeky']
 
+        first_time = False
         if self.target is None:
+            first_time = True
             self.target = player
             self.target_position = self.target.position
 
@@ -145,13 +147,14 @@ class Zeeky(BallEnemy):
             self.say('going')
             self.going = True
             self.can_stop = False
-            for bean in beans:
-                if bean is not self and self.app.camera.contains(bean.position, 0):
-                    self.say('hello there')
-                    self.target = bean
-                    break
-            else:
-                self.target = player
+            if not first_time:
+                for bean in beans:
+                    if bean is not self and self.app.camera.contains(bean.position, 0):
+                        self.say('hello there')
+                        self.target = bean
+                        break
+                else:
+                    self.target = player
 
             self.target_position = self.target.position
             delta = self.target_position-self.position
@@ -246,8 +249,8 @@ class Zbln(BallEnemy):
             c = pymunk.PinJoint(a[0],b[0])
             self.joints.append(c)
 
-        self.base_speed = 100
-        self.base_friction = -0.5
+        self.base_speed = 25
+        self.base_friction = -0.1
 
         self.m = 0
         self.shapes = []
@@ -261,6 +264,9 @@ class Zbln(BallEnemy):
 
         self.get_position()
         self.my_velocity = Vec2d(0,0)
+
+        self.spawn_interval = 5
+        self.next_spawn = self.app.engine_time+self.spawn_interval
 
     def add_to_space(self, space):
 #        for body, shapes in self.body_map.items():
@@ -322,11 +328,16 @@ class Zbln(BallEnemy):
         else:
             raise AssertionError #This is the worst thing i have ever done
 
-    def seek_player(self, player):
-        delta = player.position-self.position
+    def seek_player(self, player_position):
+        delta = player_position-self.position
         delta /= abs(delta)
+
+        speed = self.speed
+        if not self.app.camera.contains(self.position, 2):
+            speed = self.speed*10
+
         for body in self.body_map.keys():
-            body.apply_force_at_local_point(delta*self.speed)
+            body.apply_force_at_local_point(delta*speed)
 
     def apply_friction(self, player):
         vel = Vec2d(0,0)
@@ -335,18 +346,46 @@ class Zbln(BallEnemy):
         vel/=len(self.body_map)
 
         friction = vel*self.friction
-        for body in self.body_map.keys():
-#            friction = body.velocity*self.friction
 
+        if len(self.body_map) >= 7:
+            friction *= 10
+
+        for body in self.body_map.keys():
             body.apply_force_at_local_point(friction)
 
-
+        if len(self.body_map) >= 7:
+            for body in self.body_map.keys():
+                friction = body.velocity*(-self.friction)
+                body.apply_force_at_local_point(friction)
+            #TODO: when max velocity exceeds threshold, become camera pickup
+            #TODO: or just duration withing range of center?
+            #TODO: different pickups based on topology?
+            #TODO: different zoom level based on topology?
 
     def update(self):
         self.get_position()
         self.normal_update()
 
-        #TODO spawn zeeky sometimes
+    def normal_update(self):
+        player = self.app.player
+        if player is None: return
+        self.hit_player(player)
+
+        if len(self.body_map) < 7:
+            self.seek_player(player.position)
+        else:
+            self.seek_player(self.app.camera.reference_position)
+
+        self.apply_friction(player)
+
+        if self.app.engine_time >= self.next_spawn:
+            self.next_spawn += self.spawn_interval
+
+            if len(self.app.tracker['Zeeky']) + len(self.body_map) < 7:
+                delta = player.position-self.position
+                delta /= (abs(delta)/20)
+
+                entity = self.app.spawn_entity('Zeeky', self.position+delta)
 
     def draw(self):
         for body, shapes in self.body_map.items():
