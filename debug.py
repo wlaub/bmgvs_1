@@ -147,10 +147,10 @@ class DebugConsole:
         self.stashed = ''
         self.cursor = 0
 
-        parts = full_cmd.split()
-        cmd = parts[0]
-
         try:
+            parts = full_cmd.split()
+            cmd = parts[0]
+
             if cmd == 'spawn':
                 name = parts[1]
                 self.app.spawn_entity(name, self.app.mpos)
@@ -182,6 +182,23 @@ class DebugConsole:
                     self.app.beans+=1
                 elif what == 'lore':
                     self.app.lore_score+=1
+            elif cmd == 'setv':
+                self.app.flags.setv(*parts[1:])
+            elif cmd == 'set':
+                self.app.flags.set(*parts[1:])
+            elif cmd == 'clearv':
+                print(self.app.flags.clearv(*parts[1:]))
+            elif cmd == 'getv':
+                print(self.app.flags.getv(*parts[1:]))
+            elif cmd == 'get':
+                print(self.app.flags.get(*parts[1:]))
+            elif cmd == 'flags':
+                print('nv:')
+                for key, value in self.app.flags.flags.items():
+                    print(f'  {key}:\t{value}')
+                print('v:')
+                for key, value in self.app.flags.volatile_flags.items():
+                    print(f'  {key}:\t{value}')
             elif cmd == 'pain':
                 self.app.player.can_get_hurt = not self.app.player.can_get_hurt
         except Exception as e:
@@ -252,7 +269,7 @@ class DebugConsole:
             health = self.app.player.health
 
         now = datetime.datetime.now()
-        dt = now-self.app.startup_time
+        dt = now-self.app.flags.getv('_startup_time')
 
         info_text = f"""
 {self.app.engine_time:7.2f} {int(self.app.engine_time*120):07} {dt}

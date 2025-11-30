@@ -178,25 +178,21 @@ class Zeeky(BallEnemy):
             for bean in beans:
                 if bean is self: continue
                 try:
-#                    hit = self.shape.shapes_collide(bean.shape)
                     bean.try_hit(self.shape)
                     if isinstance(bean, Zeeky):
                         self.say('blessed union')
-                        #TODO merge into new enemy
                         #this is why body management needs unfucked
                         self.app.remove_entity(bean, preserve_physics = True)
                         self.app.remove_entity(self, preserve_physics = True)
-                        body_map = {
-                            bean.body: (bean.shape,),
-                            self.body: (self.shape,),
-                            }
-                        #TODO someday
-    #                    self.app.spawn_entity('Zbln', body_map)
+                        if self.app.flags.getv('zbln', False):
+                            body_map = {
+                                bean.body: (bean.shape,),
+                                self.body: (self.shape,),
+                                }
+                            self.app.spawn_entity('Zbln', body_map)
                         return
                     else:
                         bean.absorb(self)
-                        #TODO merge with zbln some day
-                        pass
                 except AssertionError: pass
 
             self.body.apply_force_at_local_point(self.direction)

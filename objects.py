@@ -346,14 +346,14 @@ class Flags:
 
         self.on_set = []
 
-    def get(self, name, default = None):
+    def getnv(self, name, default = None):
         return self.flags.get(name, default)
 
     def getv(self, name, default = None):
         return self.volatile_flags.get(name, default)
 
 
-    def set(self, name, value=True):
+    def setnv(self, name, value=True):
         old_value = self.flags.get(name, None)
         self.flags[name] = value
         self.run_on_set(name, old_value, value, volatile=False)
@@ -364,7 +364,7 @@ class Flags:
         self.run_on_set(name, old_value, value, volatile=True)
 
 
-    def clear(self, name):
+    def clearnv(self, name):
         old_value = self.flags.pop(name, None)
         self.run_on_set(name, old_value, None, volatile=False)
 
