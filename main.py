@@ -166,22 +166,23 @@ class PhysicsDemo:
 
     def spawn(self):
         t = random.random()
-        margin = 50
-        l,r,u,d = self.camera.lrud
-        if t < 0.25:
-            x = l-margin
-            y = t*4*(d-u)+u
-        elif t < 0.5:
-            x = r+margin
-            y = (t-0.25)*4*(u-d)+d
-        elif t < 0.75:
-            y = u-margin
-            x = (t-0.5)*4*(r-l)+l
-        else:
-            y = d+margin
-            x = (t-0.75)*4*(l-r)+r
-
-        pos = Vec2d(x,y)
+        pos = self.camera.get_boundary_point(t, 50)
+#        margin = 50
+#        l,r,u,d = self.camera.lrud
+#        if t < 0.25:
+#            x = l-margin
+#            y = t*4*(d-u)+u
+#        elif t < 0.5:
+#            x = r+margin
+#            y = (t-0.25)*4*(u-d)+d
+#        elif t < 0.75:
+#            y = u-margin
+#            x = (t-0.5)*4*(r-l)+l
+#        else:
+#            y = d+margin
+#            x = (t-0.75)*4*(l-r)+r
+#
+#        pos = Vec2d(x,y)
         if len(self.tracker['Zippy']) == 0 and random.random() < 0.2*(len(self.tracker['BeanPickup'])-2+len(self.tracker['Zeeky'])*3):
             new_entity = self.create_entity('Zippy', pos)
         else:

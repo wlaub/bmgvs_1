@@ -168,6 +168,27 @@ class Camera:
             result = min(a for a in (self.left-x, x-self.right, self.up-y, y-self.down) if a > 0)
             return result
 
+    def get_boundary_point(self, t, margin=0):
+        l,r,u,d = self.lrud
+        l-=margin
+        r+=margin
+        u-=margin
+        d+=margin
+        if t < 0.25:
+            x = l
+            y = t       *4*(d-u)+u
+        elif t < 0.5:
+            x = r
+            y = (t-0.25)*4*(u-d)+d
+        elif t < 0.75:
+            y = u
+            x = (t-0.5) *4*(r-l)+l
+        else:
+            y = d
+            x = (t-0.75)*4*(l-r)+r
+        return Vec2d(x,y)
+
+
 class Entity:
     track_as = set()
 
