@@ -246,6 +246,10 @@ class Player(Entity):
         print(f'{stats["lore_score"]} {stats["title"]} {stats["seed"]}')
         print(json.dumps(stats, indent=2))
 
+        stats['counts'] = counts = {}
+        for k,v in self.app.tracker.items():
+            counts[k] = len(v)
+
         #TODO fixme
         stats['vflags'] = {k:v for k,v in self.app.flags.volatile_flags.items() if not isinstance(v, datetime.datetime)}
         stats['nvflags'] = self.app.flags.flags
