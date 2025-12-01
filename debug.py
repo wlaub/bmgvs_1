@@ -194,6 +194,8 @@ class DebugConsole:
                     name = parts[1]
                     self.shows.add(name)
                 self.entity_list = self.get_entity_list()
+            elif cmd == 'count':
+                print(f'{parts[1]}: {len(self.app.tracker[parts[1]])}')
             elif cmd == 'give':
                 what = parts[1].lower()
                 if what == 'bean':
