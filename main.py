@@ -101,6 +101,7 @@ class PhysicsDemo:
 
         self.flags = Flags()
         self.flags.setv('_startup_time', datetime.datetime.now())
+        self.flags.setv('_first_spawns', {})
 
         def _on_vocal(name, old_value, new_value, volatile):
             if new_value:
@@ -136,7 +137,7 @@ class PhysicsDemo:
 
         self.lore_score = 0
         self.beans = 0
-        self.field_richness = 0.75 #TODO geography
+        self.field_richness = 0.7 #TODO geography
 
         self.running = True
 
@@ -151,6 +152,9 @@ class PhysicsDemo:
         return self.eidhwm
 
     def create_entity(self, name, *args, **kwargs):
+        first_spawns = self.flags.getv('_first_spawns')
+        if not name in first_spawns.keys():
+            first_spawns[name] = self.engine_time
         return entity_registry.create_entity(name, self, *args, **kwargs)
 
     def spawn_entity(self, name, *args, **kwargs):
@@ -177,7 +181,7 @@ class PhysicsDemo:
             x = (t-0.75)*4*(l-r)+r
 
         pos = Vec2d(x,y)
-        if len(self.tracker['Zippy']) == 0 and random.random() < 0.1*len(self.tracker['BeanPickup']):
+        if len(self.tracker['Zippy']) == 0 and random.random() < 0.2*(len(self.tracker['BeanPickup'])-2+len(self.tracker['Zeeky'])*3):
             new_entity = self.create_entity('Zippy', pos)
         else:
             new_entity = self.create_entity('Ball', pos)

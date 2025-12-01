@@ -245,6 +245,10 @@ class Player(Entity):
            }
         print(f'{stats["lore_score"]} {stats["title"]} {stats["seed"]}')
         print(json.dumps(stats, indent=2))
+
+        #TODO fixme
+        stats['vflags'] = {k:v for k,v in self.app.flags.volatile_flags.items() if not isinstance(v, datetime.datetime)}
+        stats['nvflags'] = self.app.flags.flags
         with open(os.path.join('stats/', filename) ,'w') as fp:
             json.dump(stats, fp)
 

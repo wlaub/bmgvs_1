@@ -184,6 +184,7 @@ class Entity:
         self.parent = parent
         self.last_hit = -100
         self.grace_time = 0.2
+        self.spawn_engine_time = self.app.engine_time
         self.health = 1
         self.vocal = self.app.flags.getv('_vocal', False)
         self.eid = self.app.get_eid()
