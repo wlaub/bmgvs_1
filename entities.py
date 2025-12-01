@@ -304,10 +304,15 @@ class Zbln(BallEnemy):
         self.joints.append(c)
         self.app.space.add(c)
 
+        for body in self.body_map.keys():
+            body.mass *= 1.75
+
+        #TODO i think that there is a need for this to be immune to foot collision
 #        self.m+=body.mass
-#        m = self.m
-#        self.speed = self.base_speed*m
-#        self.friction = self.base_friction*m
+        self.m*= 1.75
+        m = self.m
+        self.speed = self.base_speed*m
+        self.friction = self.base_friction*m
 
     def hit_player(self, player, dmg=1):
         for shape in self.shapes:
@@ -373,10 +378,15 @@ class Zbln(BallEnemy):
         if player is None: return
         self.hit_player(player)
 
-        if len(self.body_map) < 7:
-            self.seek_player(player.position)
-        else:
-            self.seek_player(self.app.camera.reference_position)
+        #TODO
+        a = (len(self.body_map)/7 + 0.75)/2
+        ia = 1-a
+        target_position = player.position*ia + self.app.camera.reference_position*a
+        self.seek_player(target_position)
+#        if False and len(self.body_map) < 7:
+#            self.seek_player(player.position)
+#        else:
+#            self.seek_player(self.app.camera.reference_position)
 
         self.apply_friction(player)
 

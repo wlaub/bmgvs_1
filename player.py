@@ -27,7 +27,8 @@ class Player(Entity):
         self.health = 3
         self.grace_time = 1
         self.app = app
-        self.m = m = 10000
+#        self.m = m = 10000
+        self.m = m = 1000
         self.body = body = pm.Body(self.m, float("inf"))
         body.position = Vec2d(*pos)
 
@@ -94,7 +95,8 @@ class Player(Entity):
         self.set_center_position()
         self.app.space.add(self.center_body)
 
-        c = pymunk.DampedSpring(self.center_body, self.body, (0,0), (0,0), 0, m*1000,1000000)
+#        c = pymunk.DampedSpring(self.center_body, self.body, (0,0), (0,0), 0, m*1000,1000000)
+        c = pymunk.DampedSpring(self.center_body, self.body, (0,0), (0,0), 0, m*1000,m*100)
         self.app.space.add(c)
 
 

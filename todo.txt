@@ -82,6 +82,7 @@ debug console
     get entity at cursor
 ~    inspect entities
     show entity debug logs
+        needs timestamps
     tab completion
     etc
 

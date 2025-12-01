@@ -217,7 +217,6 @@ class Exoskeleton(Equipment):
             else:
                 self.parent.active_leg.do_step(p1, step_type)
 
-
             self.walking = True
 
     def post_foot_update(self):
