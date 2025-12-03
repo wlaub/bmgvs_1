@@ -361,9 +361,39 @@ class Zbln(BallEnemy):
             body.apply_force_at_local_point(friction)
 
         if len(self.body_map) >= 7:
+            avg_speed = 0
             for body in self.body_map.keys():
                 friction = body.velocity*(-self.friction)
+                avg_speed+=abs(body.velocity)
                 body.apply_force_at_local_point(friction)
+
+            avg_speed/=len(self.body_map)
+
+            #TODO don't give zeeky boost to spawning zippy if zbl'n
+            #TODO apply outward wind at max size
+            #TODO sometimes it doesn't really start spinning?
+#            wind_force = self.speed/10
+            if avg_speed > 100:
+                wind_force = avg_speed*100
+                print(avg_speed, wind_force)
+                for entity in self.app.tracker['Enemy']:
+                    if entity is self: continue
+                    try:
+                        body = entity.body
+                        delta = body.position - self.position
+                        delta /= abs(delta)
+                        body.apply_force_at_local_point(delta*wind_force)
+
+                    except Exception as e:
+                        print(e)
+
+                body = player.body
+                delta = body.position - self.position
+                delta /= abs(delta)
+                body.apply_force_at_local_point(delta*wind_force)
+
+
+
             #TODO: when max velocity exceeds threshold, become camera pickup
             #TODO: or just duration withing range of center?
             #TODO: different pickups based on topology?
@@ -383,6 +413,7 @@ class Zbln(BallEnemy):
         ia = 1-a
         target_position = player.position*ia + self.app.camera.reference_position*a
         self.seek_player(target_position)
+
 #        if False and len(self.body_map) < 7:
 #            self.seek_player(player.position)
 #        else:

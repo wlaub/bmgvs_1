@@ -118,7 +118,7 @@ spawner entity creation mechanics
 
 camera zoom mechanics
 
-lustful ball
+lustful ball can be farmed, herded, and then harvested by some other mechanism away from the origin
 
 rooms/transitions
 
