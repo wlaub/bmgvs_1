@@ -540,19 +540,18 @@ class Ball(BallEnemy):
         self.apply_friction(player)
 
     def get_drops(self):
-        if random.random() > 1-(self.r-5)/16: #heath drop
-            return [self.app.create_entity('HealthPickup', self.position)]
-        elif random.random() > 1-self.r/8: #lore/bean
-            return [self.app.field.make_lore_drop(self.position)]
-#            if random.random() > self.app.field.get('richness'):
-#                return [self.app.create_entity('BeanPickup', self.position)]
-#            else:
-#                return [self.app.create_entity('LoreOrePickup', self.position)]
-        elif random.random() > .75 and self.r > 7: #length pickup
-            return [self.app.create_entity('LengthPickup', self.position)]
+        if self.state is BallState.FGTFL and random.random() < 0.5:
+            return []
+        elif random.random() > 1-(self.r-5)/16: #heath drop
+            if self.state is BallState.LSTFL and self.lores > 0:
+                return [self.app.create_entity('LengthPickup', self.position)]
+            else:
+                return [self.app.create_entity('HealthPickup', self.position)]
         elif random.random() > 0.97-0.03*self.app.beans:
             if len(self.app.tracker['CoffeePotPickup']) == 0:
                 return [self.app.create_entity('CoffeePotPickup', self.position)]
+        else:
+            return [self.app.field.make_lore_drop(self.position)]
         return []
 
 @register
