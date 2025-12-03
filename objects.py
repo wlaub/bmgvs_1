@@ -386,7 +386,7 @@ class Geography:
     def __init__(self, app):
         self.app = app
         self.current_props = {
-            'richness': 0.7,
+            'richness': 1.0,
             'fidelity': 0.5,
             'capacity': 50,
             'austerity': 0.2,
