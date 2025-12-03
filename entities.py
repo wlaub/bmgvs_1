@@ -542,11 +542,10 @@ class Ball(BallEnemy):
     def get_drops(self):
         if self.state is BallState.FGTFL and random.random() < 0.5:
             return []
+        elif self.state is BallState.LSTFL and self.lores > 0:
+            return [self.app.create_entity('LengthPickup', self.position)]
         elif random.random() > 1-(self.r-5)/16: #heath drop
-            if self.state is BallState.LSTFL and self.lores > 0:
-                return [self.app.create_entity('LengthPickup', self.position)]
-            else:
-                return [self.app.create_entity('HealthPickup', self.position)]
+            return [self.app.create_entity('HealthPickup', self.position)]
         elif random.random() > 0.97-0.03*self.app.beans:
             if len(self.app.tracker['CoffeePotPickup']) == 0:
                 return [self.app.create_entity('CoffeePotPickup', self.position)]
