@@ -133,11 +133,6 @@ class RckngBall(Equipment):
 
 
     def draw(self):
-        p = self.body.position + self.shape.offset.cpvrotate(self.body.rotation_vector)
-        p = self.app.jj(p)
-
-        pygame.draw.circle(self.app.screen, (49,49,49), p, int(self.r), 2)
-
         points = [self.app.jj(self.parent.position+self.parent.back_hand_position)]
         for joint in (*self.joints, self.body):
             pv = joint.position
@@ -147,6 +142,16 @@ class RckngBall(Equipment):
 #            pygame.draw.circle(self.app.screen, (255,0,0), pv, 1, 2)
 
         pygame.draw.lines(self.app.screen, (0,0,0), False, points)
+
+        p = self.body.position + self.shape.offset.cpvrotate(self.body.rotation_vector)
+        p = self.app.jj(p)
+
+        pygame.draw.circle(self.app.screen, (0,0,0), p, int(self.r))
+        #TODO if dmg:
+        pygame.draw.circle(self.app.screen, (128,128,128), p, int(self.r), 1)
+
+
+
 
 
     def add_to_space(self, space):
