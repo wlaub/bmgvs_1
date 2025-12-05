@@ -95,6 +95,8 @@ class PhysicsDemo:
 
         self.font = pygame.font.Font(None, 14)
 
+        self.big_font = pygame.font.Font(None, 14) #lol
+
         self.queue_reset = False
 
         self.flags = Flags()
@@ -111,10 +113,13 @@ class PhysicsDemo:
 
         self.flags.setv('_startup_time', datetime.datetime.now())
         self.flags.setv('_first_spawns', {})
+        self.flags.setnv('_show_score', True) #TODO nv state and defaults
+        self.flags.setnv('_show_title', True) #
+        self.flags.setnv('_show_seed', True) #
+#        self.flags.setnv('_title_screen', True) #TODO
+
         if loop is not None:
             self.flags.setv('_loop')
-
-        self.game_start = False
 
         self.coroutines = set()
 
@@ -213,18 +218,36 @@ class PhysicsDemo:
             for entity in self.draw_layers[layer]:
                 entity.draw()
 
-        header = self.font.render(f'{self.lore_score}', False, (0,0,128))
-        self.screen.blit(header, (2,2))
+        if self.flags.getnv('_show_score'):
+            header = self.font.render(f'{self.lore_score}', False, (0,0,128))
+            self.screen.blit(header, (2,2))
+
+        if not self.flags.getv('_game_start') and self.flags.getnv('_title_screen'):
+            ypos = 20
+            text = self.big_font.render(f'BLDNG MAN: GAIDN', False, (0,0,0))
+            width = self.camera.w*0.8
+            alpha = width/text.get_width()
+            text = pygame.transform.scale_by(text, alpha)
+            self.screen.blit(text, ((self.camera.w-width)/2,ypos))
+            ypos += text.get_height()
+
+            text = self.big_font.render(f"VLT'L STATE 0", False, (0,0,0))
+            alpha *=0.915
+            text = pygame.transform.scale_by(text, alpha)
+
+            self.screen.blit(text, (self.camera.w-(self.camera.w-width)/2-text.get_width(),ypos))
 
 
         ypos = self.camera.h-2
-        text = self.font.render(f'{TITLE}', False, (128,128,0))
-        ypos -= text.get_height()
-        self.screen.blit(text, (2,ypos))
+        if self.flags.getnv('_show_title'):
+            text = self.font.render(f'{TITLE}', False, (128,128,0))
+            ypos -= text.get_height()
+            self.screen.blit(text, (2,ypos))
 
-        text = self.font.render(f'{SEED}', False, (128,128,0))
-        ypos -= text.get_height()
-        self.screen.blit(text, (2,ypos))
+        if self.flags.getnv('_show_seed'):
+            text = self.font.render(f'{SEED}', False, (128,128,0))
+            ypos -= text.get_height()
+            self.screen.blit(text, (2,ypos))
 
     def render_game(self):
         hello = pygame.transform.scale(self.screen, (self.ws, self.hs))
