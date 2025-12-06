@@ -194,6 +194,19 @@ class Camera:
             result = min(a for a in (self.left-x, x-self.right, self.up-y, y-self.down) if a > 0)
             return result
 
+    def draw_boundary(self, zoom_level, margin=0):
+
+        w = self.app.ws/zoom_level+2*margin
+        h = self.app.hs/zoom_level+2*margin
+
+        left = (self.w-w)/2
+        top = (self.h-h)/2
+
+        rect = pygame.Rect(left, top, w, h)
+
+        pygame.draw.rect(self.screen, (0,255,0), rect, 1)
+
+
     def get_boundary_point(self, t, margin=0):
         l,r,u,d = self.lrud
         l-=margin

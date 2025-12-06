@@ -152,7 +152,7 @@ class PhysicsDemo:
 
         self.field = Geography(self)
 
-        self.forget_range = 1
+        self.forget_range = 2
 
         def _on_vocal(name, old_value, new_value, volatile):
             if new_value:
@@ -182,8 +182,8 @@ class PhysicsDemo:
         self.tracker = defaultdict(list)
 
         #TODO
-        self.spawn_entity('BallSpnlþ', (-300, 000), layer=100)
-        self.spawn_entity('ZippySpnlþ', (300, 000), layer=100)
+        self.spawn_entity('BallSpnlþ', (-800, 000), layer=100)
+        self.spawn_entity('ZippySpnlþ', (800, 000), layer=100)
 
         self.player = self.spawn_entity('Player', (0,0), layer=10)
 

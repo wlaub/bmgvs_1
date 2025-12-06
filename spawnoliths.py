@@ -14,6 +14,7 @@ from registry import register, entity_registry
 from objects import Controller, Entity, COLLTYPE_DEFAULT, BallEnemy
 
 class Spnlþ(Entity):
+    #TODO prevent spawning inside?
 
     def draw(self):
         color = (0,0,255)
@@ -25,6 +26,10 @@ class Spnlþ(Entity):
                     vertices.append(p)
                 pygame.draw.polygon(self.app.screen, color, vertices, 1)
 
+        if (z := self.app.flags.getv('_spawn_bounds', 0)) > 0:
+            self.app.camera.draw_boundary(z, 50)
+
+
     def add_to_space(self, space):
         for body, shapes in self.body_map.items():
             space.add(body, *shapes)
@@ -33,6 +38,7 @@ class Spnlþ(Entity):
             space.remove(body, *shapes)
 
     def update(self):
+
         pass
 
 
@@ -46,8 +52,8 @@ class BallSpnlþ(Spnlþ):
 
         shapes = []
 
-        r = 49
-        s = 67
+        r = 49*7
+        s = 67*7
         da = -math.pi/7
         for i in range(3):
             dx = r*math.cos(2*i*math.pi/3+da)
@@ -84,8 +90,8 @@ class ZippySpnlþ(Spnlþ):
 
         shapes = []
 
-        _r = 42
-        s = 35
+        _r = 42*7
+        s = 35*7
         da = -math.pi/7
         for i in range(7):
             ix = i-3
